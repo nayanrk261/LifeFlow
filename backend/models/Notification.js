@@ -6,7 +6,8 @@ const notificationSchema = new mongoose.Schema({
   message: { type: String, trim: true },
   type: { type: String, enum: ['info', 'warning', 'urgent', 'success'], default: 'info' },
   read: { type: Boolean, default: false },
-  relatedEntity: { type: String },
+  relatedEntity: { type: String }, // e.g. 'family_request', 'document_expiry', 'scholarship'
+  actionPayload: { type: mongoose.Schema.Types.Mixed }, // e.g. { connectionId: "...", requesterName: "..." }
 }, { timestamps: true });
 
 notificationSchema.index({ userId: 1, read: 1 });

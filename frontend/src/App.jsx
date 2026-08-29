@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import './index.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { api } from './services/api';
-import { documents as demoDocs, reminders as demoReminders, notifications as demoNotifs, familyMembers as demoFamily } from './data/mockData';
+import { documents as demoDocs, reminders as demoReminders, notifications as demoNotifs } from './data/mockData';
 
 // Shell
 import Sidebar from './components/Sidebar';
@@ -24,13 +24,16 @@ import Reminders from './components/Reminders';
 import Family from './components/Family';
 import Vault from './components/Vault';
 import AddDocModal from './components/AddDocModal';
+import AskLifeFlowModal from './components/AskLifeFlowModal';
+import GoalDetail from './components/GoalDetail';
 import TechArchitecture from './components/TechArchitecture';
 import Privacy from './components/Privacy';
 import Competitive from './components/Competitive';
 import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
 
 function AppContent() {
-  const { user, profile, isAuthenticated, isDemo, enterDemo, loading, logout } = useAuth();
+  const { user, profile, isAuthenticated, isDemo, enterDemo, loading } = useAuth();
 
   const [screen, setScreen] = useState('landing');
 
@@ -39,11 +42,19 @@ function AppContent() {
   const [goals, setGoals] = useState([]);
   const [remindersList, setRemindersList] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [familyMembers, setFamilyMembers] = useState([]);
+  const [familyData, setFamilyData] = useState({
+    manualMembers: [],
+    connectedMembers: [],
+    pendingOutbound: [],
+    incomingRequests: [],
+  });
 
   // UI state
   const [selectedDocId, setSelectedDocId] = useState(null);
+  const [selectedGoalId, setSelectedGoalId] = useState(null);
   const [showAddDoc, setShowAddDoc] = useState(false);
+  const [showAskLifeFlow, setShowAskLifeFlow] = useState(false);
+  const [askLifeFlowQuery, setAskLifeFlowQuery] = useState('');
   const [toasts, setToasts] = useState([]);
 
   // Toast system
@@ -72,7 +83,7 @@ function AppContent() {
       if (goalsRes.status === 'fulfilled') setGoals(goalsRes.value);
       if (remsRes.status === 'fulfilled') setRemindersList(remsRes.value);
       if (notifsRes.status === 'fulfilled') setNotifications(notifsRes.value);
-      if (famRes.status === 'fulfilled') setFamilyMembers(famRes.value);
+      if (famRes.status === 'fulfilled') setFamilyData(famRes.value);
     } catch (err) {
       console.error('Error fetching user data:', err);
     }
@@ -83,7 +94,39 @@ function AppContent() {
       setDocuments(demoDocs);
       setRemindersList(demoReminders);
       setNotifications(demoNotifs);
-      setFamilyMembers(demoFamily);
+      setFamilyData({
+        manualMembers: [],
+        connectedMembers: [
+          { _id: 'c1', userId: 'u2', connectionId: 'c1', name: 'Suresh Sharma', email: 'suresh@demo.com', relationship: 'Father', sharedDocumentsCount: 2 }
+        ],
+        pendingOutbound: [],
+        incomingRequests: [],
+      });
+      setGoals([
+        {
+          _id: 'g-demo-1',
+          id: 'g-demo-1',
+          title: 'Scholarship Application Preparation',
+          category: 'Education',
+          originalUserRequest: 'I want to apply for a scholarship.',
+          readinessScore: 80,
+          nextBestAction: 'Obtain your income certificate before continuing. This is the only missing required document.',
+          aiExplanation: 'You are mostly ready to begin your scholarship application. Your identity, academic, and bank documents are available in your vault. The main missing item is your income certificate.',
+          requirements: [
+            { name: 'Aadhaar Card', status: 'available', required: true },
+            { name: 'Academic Marksheet', status: 'available', required: true },
+            { name: 'Bank Passbook', status: 'available', required: true },
+            { name: 'Income Certificate', status: 'missing', required: true },
+            { name: 'Passport Photo', status: 'optional', required: false }
+          ],
+          actions: [
+            { _id: 'a1', title: 'Complete student profile', status: 'Completed', priority: 'high' },
+            { _id: 'a2', title: 'Upload academic marksheet', status: 'Completed', priority: 'high' },
+            { _id: 'a3', title: 'Obtain income certificate', status: 'Not Started', priority: 'high' },
+            { _id: 'a4', title: 'Submit scholarship application', status: 'Not Started', priority: 'medium' }
+          ]
+        }
+      ]);
     } else if (isAuthenticated) {
       fetchUserData();
     }
@@ -103,9 +146,15 @@ function AppContent() {
   }, [isAuthenticated, isDemo, user, loading]);
 
   // Navigation helper
-  const navigate = useCallback((dest, docId) => {
+  const navigate = useCallback((dest, paramId) => {
+    if (dest === 'ask-lifeflow') {
+      setShowAskLifeFlow(true);
+      setAskLifeFlowQuery('');
+      return;
+    }
     setScreen(dest);
-    if (docId) setSelectedDocId(docId);
+    if (dest === 'doc-intelligence' && paramId) setSelectedDocId(paramId);
+    if (dest === 'goal-detail' && paramId) setSelectedGoalId(paramId);
     window.scrollTo(0, 0);
   }, []);
 
@@ -132,6 +181,7 @@ function AppContent() {
       } else {
         const created = await api.createDocument(docData);
         setDocuments(prev => [created, ...prev]);
+        fetchUserData();
       }
       setShowAddDoc(false);
       addToast('Document added and analyzed', 'success');
@@ -140,23 +190,70 @@ function AppContent() {
     }
   };
 
-  const handleSaveGoal = async (processObj) => {
+  const handleOpenAskLifeFlow = (query = '') => {
+    setAskLifeFlowQuery(query);
+    setShowAskLifeFlow(true);
+  };
+
+  const handleSaveAnalyzedGoal = async (analyzedGoal) => {
     try {
       if (isDemo) {
-        addToast(`Saved ${processObj.name} to goals (Demo)`, 'success');
+        const newDemoGoal = {
+          ...analyzedGoal,
+          _id: 'goal-demo-' + Date.now(),
+          id: 'goal-demo-' + Date.now(),
+        };
+        setGoals(prev => [newDemoGoal, ...prev]);
+        setSelectedGoalId(newDemoGoal._id);
+        setScreen('goal-detail');
+        addToast(`Goal "${analyzedGoal.title}" created successfully!`, 'success');
       } else {
-        await api.createGoal({
-          processType: processObj.id,
-          title: processObj.name,
-          category: 'General',
-          progress: 50,
-          requirements: processObj.reqs.map(r => ({ name: r, status: 'missing' }))
-        });
-        addToast(`Saved ${processObj.name} as active goal`, 'success');
+        const createdGoal = await api.createGoal(analyzedGoal);
+        setGoals(prev => [createdGoal, ...prev]);
+        setSelectedGoalId(createdGoal._id);
+        setScreen('goal-detail');
+        addToast(`Goal "${analyzedGoal.title}" created successfully!`, 'success');
         fetchUserData();
       }
     } catch (err) {
       addToast(err.message || 'Failed to save goal', 'error');
+    }
+  };
+
+  const handleUpdateActionStatus = async (goalId, actionId, status) => {
+    try {
+      if (isDemo) {
+        setGoals(prev => prev.map(g => {
+          if (g._id === goalId || g.id === goalId) {
+            const updatedActions = (g.actions || []).map(a =>
+              (a._id === actionId || a.id === actionId) ? { ...a, status } : a
+            );
+            return { ...g, actions: updatedActions };
+          }
+          return g;
+        }));
+      } else {
+        const updatedGoal = await api.updateActionStatus(goalId, actionId, status);
+        setGoals(prev => prev.map(g => (g._id === goalId || g.id === goalId) ? updatedGoal : g));
+      }
+      addToast('Action status updated', 'success');
+    } catch (err) {
+      addToast(err.message || 'Failed to update action step', 'error');
+    }
+  };
+
+  const handleDeleteGoal = async (goalId) => {
+    try {
+      if (isDemo) {
+        setGoals(prev => prev.filter(g => g._id !== goalId && g.id !== goalId));
+      } else {
+        await api.deleteGoal(goalId);
+        setGoals(prev => prev.filter(g => g._id !== goalId && g.id !== goalId));
+      }
+      addToast('Goal removed', 'info');
+      setScreen('overview');
+    } catch (err) {
+      addToast(err.message || 'Failed to delete goal', 'error');
     }
   };
 
@@ -171,6 +268,42 @@ function AppContent() {
     }
   };
 
+  const handleMarkAllNotifsRead = async () => {
+    try {
+      if (!isDemo) {
+        await Promise.all(notifications.filter(n => !n.read).map(n => api.markNotificationRead(n._id || n.id)));
+      }
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      addToast('All notifications marked as read', 'info');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAcceptFamilyRequest = async (connectionId) => {
+    try {
+      if (!isDemo) {
+        await api.acceptFamilyRequest(connectionId);
+        fetchUserData();
+      }
+      addToast('Family connection accepted!', 'success');
+    } catch (err) {
+      addToast(err.message || 'Failed to accept connection', 'error');
+    }
+  };
+
+  const handleDeclineFamilyRequest = async (connectionId) => {
+    try {
+      if (!isDemo) {
+        await api.declineFamilyRequest(connectionId);
+        fetchUserData();
+      }
+      addToast('Family connection declined', 'info');
+    } catch (err) {
+      addToast(err.message || 'Failed to decline connection', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center text-slate-400 text-[14px]">
@@ -180,6 +313,8 @@ function AppContent() {
   }
 
   const showShell = isAuthenticated && !['landing', 'auth', 'onboarding'].includes(screen);
+
+  const currentGoal = goals.find(g => String(g._id || g.id) === String(selectedGoalId)) || goals[0];
 
   const renderScreen = () => {
     switch (screen) {
@@ -195,7 +330,27 @@ function AppContent() {
       case 'onboarding':
         return <Onboarding onComplete={handleOnboardingComplete} />;
       case 'overview':
-        return <Overview documents={documents} goals={goals} navigate={navigate} onAddDoc={() => setShowAddDoc(true)} />;
+        return (
+          <Overview
+            documents={documents}
+            goals={goals}
+            navigate={navigate}
+            onAddDoc={() => setShowAddDoc(true)}
+            onOpenAskLifeFlow={handleOpenAskLifeFlow}
+            onSelectGoal={(g) => navigate('goal-detail', g._id || g.id)}
+          />
+        );
+      case 'goal-detail':
+        return (
+          <GoalDetail
+            goal={currentGoal}
+            navigate={navigate}
+            onUpdateActionStatus={handleUpdateActionStatus}
+            onDeleteGoal={handleDeleteGoal}
+            onAddDoc={() => setShowAddDoc(true)}
+            addToast={addToast}
+          />
+        );
       case 'documents':
         return <Documents documents={documents} navigate={navigate} onAddDoc={() => setShowAddDoc(true)} />;
       case 'doc-intelligence':
@@ -210,7 +365,7 @@ function AppContent() {
       case 'attention':
         return <NeedsAttention documents={documents} navigate={navigate} />;
       case 'readiness':
-        return <Readiness documents={documents} navigate={navigate} onSaveGoal={handleSaveGoal} />;
+        return <Readiness documents={documents} navigate={navigate} onSaveGoal={handleSaveAnalyzedGoal} />;
       case 'assistant':
         return <Assistant documents={documents} profile={profile} />;
       case 'generator':
@@ -224,11 +379,29 @@ function AppContent() {
           />
         );
       case 'family':
-        return <Family familyMembers={familyMembers} onRefresh={fetchUserData} addToast={addToast} />;
+        return (
+          <Family
+            familyData={familyData}
+            userDocuments={documents}
+            onRefresh={fetchUserData}
+            addToast={addToast}
+          />
+        );
       case 'vault':
-        return <Vault documents={documents} onAddDoc={() => setShowAddDoc(true)} />;
+        return <Vault documents={documents} onAddDoc={() => setShowAddDoc(true)} onRefresh={fetchUserData} addToast={addToast} />;
       case 'profile':
         return <ProfilePage navigate={navigate} addToast={addToast} />;
+      case 'notifications':
+        return (
+          <NotificationsPage
+            notifications={notifications}
+            markNotifRead={handleMarkNotifRead}
+            markAllNotifsRead={handleMarkAllNotifsRead}
+            navigate={navigate}
+            onAcceptFamilyRequest={handleAcceptFamilyRequest}
+            onDeclineFamilyRequest={handleDeclineFamilyRequest}
+          />
+        );
       case 'architecture':
         return <TechArchitecture />;
       case 'privacy':
@@ -236,7 +409,16 @@ function AppContent() {
       case 'competitive':
         return <Competitive />;
       default:
-        return <Overview documents={documents} goals={goals} navigate={navigate} onAddDoc={() => setShowAddDoc(true)} />;
+        return (
+          <Overview
+            documents={documents}
+            goals={goals}
+            navigate={navigate}
+            onAddDoc={() => setShowAddDoc(true)}
+            onOpenAskLifeFlow={handleOpenAskLifeFlow}
+            onSelectGoal={(g) => navigate('goal-detail', g._id || g.id)}
+          />
+        );
     }
   };
 
@@ -251,7 +433,10 @@ function AppContent() {
               profile={profile}
               notifications={notifications}
               markNotifRead={handleMarkNotifRead}
+              markAllNotifsRead={handleMarkAllNotifsRead}
               navigate={navigate}
+              onAcceptFamilyRequest={handleAcceptFamilyRequest}
+              onDeclineFamilyRequest={handleDeclineFamilyRequest}
             />
             <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="max-w-6xl mx-auto fade-in">
@@ -270,6 +455,18 @@ function AppContent() {
         <AddDocModal
           onClose={() => setShowAddDoc(false)}
           onAdd={handleAddDocument}
+        />
+      )}
+
+      {showAskLifeFlow && (
+        <AskLifeFlowModal
+          initialQuery={askLifeFlowQuery}
+          onClose={() => setShowAskLifeFlow(false)}
+          onSaveGoal={handleSaveAnalyzedGoal}
+          isDemo={isDemo}
+          userDocs={documents}
+          goals={goals}
+          familyData={familyData}
         />
       )}
 

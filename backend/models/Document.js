@@ -16,9 +16,17 @@ const documentSchema = new mongoose.Schema({
   actionRequired: { type: Boolean, default: false },
   action: { type: String },
   priority: { type: String, enum: ['high', 'medium', 'low', null], default: null },
+
+  // Privacy & Explicit Document Sharing
+  visibility: { type: String, enum: ['private', 'shared'], default: 'private' },
+  sharedWith: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    permission: { type: String, enum: ['view'], default: 'view' },
+    sharedAt: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 documentSchema.index({ userId: 1 });
-documentSchema.index({ userId: 1, title: 'text', documentType: 'text', category: 'text' });
+documentSchema.index({ 'sharedWith.userId': 1 });
 
 export default mongoose.model('Document', documentSchema);

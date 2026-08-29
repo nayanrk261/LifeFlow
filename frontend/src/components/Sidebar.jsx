@@ -1,8 +1,9 @@
-import { LayoutDashboard, FileText, AlertTriangle, CheckCircle, MessageSquare, Bell, Users, Lock, User, Cpu, Shield, BarChart3, PenTool, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, AlertTriangle, CheckCircle, MessageSquare, Bell, Users, Lock, User, Cpu, Shield, BarChart3, PenTool, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'ask-lifeflow', label: 'Ask LifeFlow', icon: Sparkles, highlight: true },
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'attention', label: 'Needs Attention', icon: AlertTriangle },
   { id: 'readiness', label: 'Readiness', icon: CheckCircle },
@@ -63,12 +64,14 @@ export default function Sidebar({ screen, navigate, unreadNotifCount = 0 }) {
                 key={item.id}
                 onClick={() => navigate(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
-                  active
+                  item.highlight
+                    ? 'text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 mb-1'
+                    : active
                     ? 'bg-slate-800/80 text-white'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
-                <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                <Icon size={16} strokeWidth={active ? 2 : 1.5} className={item.highlight ? 'text-emerald-400' : ''} />
                 <span>{item.label}</span>
                 {item.id === 'attention' && unreadNotifCount > 0 && (
                   <span className="ml-auto text-[11px] bg-red-500/15 text-red-400 px-1.5 py-0.5 rounded-full font-medium">
