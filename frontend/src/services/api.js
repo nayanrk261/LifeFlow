@@ -48,6 +48,7 @@ export const api = {
     return request(`/documents${query ? `?${query}` : ''}`);
   },
   getDocument: (id) => request(`/documents/${id}`),
+  analyzeDocument: (docData) => request('/documents/analyze', { method: 'POST', body: JSON.stringify(docData) }),
   createDocument: (docData) => request('/documents', { method: 'POST', body: JSON.stringify(docData) }),
   updateDocument: (id, docData) => request(`/documents/${id}`, { method: 'PUT', body: JSON.stringify(docData) }),
   deleteDocument: (id) => request(`/documents/${id}`, { method: 'DELETE' }),

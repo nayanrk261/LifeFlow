@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, Share2, Download, Cpu, Shield, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Bell, Share2, Download, Cpu, Shield, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink, Target, Sparkles, Calendar } from 'lucide-react';
 import { formatDate, getDaysUntil, getStatusBg, getStatusLabel } from '../data/mockData';
 
 export default function DocIntelligence({ document: doc, navigate, addToast, addReminder }) {
@@ -7,7 +7,7 @@ export default function DocIntelligence({ document: doc, navigate, addToast, add
       <div className="text-center py-20">
         <FileText size={24} className="text-slate-600 mx-auto mb-3" />
         <p className="text-[14px] text-slate-400">Document not found</p>
-        <button onClick={() => navigate('documents')} className="mt-4 text-[13px] text-sky-400 hover:text-sky-300">
+        <button onClick={() => navigate('documents')} className="mt-4 text-[13px] text-emerald-400 hover:text-emerald-300">
           Back to documents
         </button>
       </div>
@@ -15,208 +15,168 @@ export default function DocIntelligence({ document: doc, navigate, addToast, add
   }
 
   const days = getDaysUntil(doc.expiryDate || doc.deadline);
+  const docTitle = doc.title || doc.name;
+  const category = doc.category || doc.type || 'Personal';
+  const subType = doc.documentType || doc.subtype || 'General';
 
   const handleSetReminder = () => {
     addReminder({
-      title: doc.action || `Review ${doc.name}`,
+      title: doc.action || `Review ${docTitle}`,
       date: doc.expiryDate || doc.deadline || new Date().toISOString().split('T')[0],
-      documentId: doc.id,
+      documentId: doc.id || doc._id,
       priority: doc.priority || 'medium',
       completed: false,
       category: 'upcoming',
     });
   };
 
+  const getScoreColor = (confidence = 0.9) => {
+    if (confidence >= 0.85) return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
+    if (confidence >= 0.70) return 'text-amber-400 border-amber-500/30 bg-amber-500/10';
+    return 'text-red-400 border-red-500/30 bg-red-500/10';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 fade-in">
       {/* Back nav */}
       <button
         onClick={() => navigate('documents')}
-        className="flex items-center gap-2 text-[13px] text-slate-500 hover:text-slate-300 transition-colors"
+        className="flex items-center gap-2 text-[13px] text-slate-400 hover:text-white transition-colors"
       >
-        <ArrowLeft size={14} />
-        Back to documents
+        <ArrowLeft size={16} />
+        Back to Document Vault
       </button>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left — Document preview */}
         <div className="lg:col-span-2">
-          <div className="bg-[#0a0f1a] border border-slate-800/60 rounded-xl p-6 sticky top-6">
-            {/* Simulated document card */}
-            <div className="aspect-[3/4] bg-gradient-to-b from-slate-800/40 to-slate-800/20 border border-slate-700/40 rounded-lg flex flex-col items-center justify-center p-6 relative overflow-hidden">
-              {/* Watermark grid */}
-              <div className="absolute inset-0 opacity-5">
+          <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-6 sticky top-6">
+            <div className="aspect-[3/4] bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-xl flex flex-col items-center justify-center p-6 relative overflow-hidden shadow-inner">
+              <div className="absolute inset-0 opacity-5 pointer-events-none">
                 <div className="grid grid-cols-3 gap-8 p-4 rotate-[-15deg] scale-150 translate-x-4">
                   {Array.from({length: 12}).map((_, i) => (
-                    <span key={i} className="text-[8px] text-white whitespace-nowrap">LIFEFLOW</span>
+                    <span key={i} className="text-[8px] text-white font-mono">LIFEFLOW VAULT</span>
                   ))}
                 </div>
               </div>
 
-              <div className="relative z-10 text-center">
-                <div className="w-14 h-14 rounded-xl bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
-                  <FileText size={24} className="text-slate-400" />
+              <div className="relative z-10 text-center space-y-3">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+                  <FileText size={28} />
                 </div>
-                <h3 className="text-[16px] font-semibold text-slate-200">{doc.name}</h3>
+                <h3 className="text-lg font-bold text-white leading-tight">{docTitle}</h3>
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                  {category} • {subType}
+                </span>
+
                 {doc.number && (
-                  <p className="text-[13px] text-slate-500 mt-1 font-mono">{doc.number}</p>
+                  <p className="text-[13px] text-slate-400 font-mono pt-2">No: {doc.number}</p>
                 )}
                 {doc.issuedBy && (
-                  <p className="text-[12px] text-slate-500 mt-2">{doc.issuedBy}</p>
-                )}
-                {doc.source && (
-                  <div className="mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-700/30 border border-slate-600/30">
-                    <span className="text-[10px] text-slate-400 font-medium">{doc.source}</span>
-                  </div>
+                  <p className="text-[12px] text-slate-500">Issued by {doc.issuedBy}</p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right — AI Understanding */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* AI badge */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20">
-              <Cpu size={11} className="text-sky-400" />
-              <span className="text-[11px] font-medium text-sky-400">AI analyzed</span>
+        {/* Right — AI Document Intelligence & Details */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* AI Confidence & Status Badges */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[11px]">
+              <Sparkles size={13} />
+              <span>AI Document Intelligence Verified</span>
             </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/50 border border-slate-700/40">
-              <Shield size={11} className="text-slate-400" />
-              <span className="text-[11px] font-medium text-slate-500">Designed for on-device processing</span>
+            {doc.analysisConfidence && (
+              <span className={`px-2.5 py-1 rounded-full border text-[11px] font-bold ${getScoreColor(doc.analysisConfidence)}`}>
+                Confidence: {Math.round(doc.analysisConfidence * 100)}%
+              </span>
+            )}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-[11px] font-medium">
+              <Shield size={12} strokeWidth={2} />
+              <span>Encrypted Vault Document</span>
             </div>
           </div>
 
           {/* Title and status */}
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-xl font-bold text-white">{doc.name}</h1>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${getStatusBg(doc.status)}`}>
-                {getStatusLabel(doc.status)}
-              </span>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">{docTitle}</h1>
+              <p className="text-[13px] text-slate-400 mt-0.5">Source: {doc.source || 'Vault Storage'}</p>
             </div>
+            <span className={`text-[12px] font-bold px-3 py-1 rounded-full border ${getStatusBg(doc.status)}`}>
+              {getStatusLabel(doc.status)}
+            </span>
           </div>
 
-          {/* AI Understanding Card */}
-          <div className="bg-[#0a0f1a] border border-slate-800/60 rounded-xl p-5">
-            <h2 className="text-[13px] font-semibold text-slate-400 uppercase tracking-wider mb-4">AI Understanding</h2>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                <span className="text-[13px] text-slate-500">Document type</span>
-                <span className="text-[13px] text-slate-200 font-medium">{doc.name}</span>
+          {/* AI Summary Banner */}
+          {doc.aiSummary && (
+            <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-3">
+              <Sparkles size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">LIFEFLOW AI SUMMARY</p>
+                <p className="text-[13px] text-slate-300 leading-relaxed">{doc.aiSummary}</p>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                <span className="text-[13px] text-slate-500">Category</span>
-                <span className="text-[13px] text-slate-200">{doc.type} / {doc.subtype}</span>
+            </div>
+          )}
+
+          {/* AI Extracted Metadata Metadata */}
+          <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-5 space-y-4">
+            <h2 className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">Document Intelligence Metadata</h2>
+
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
+                <span className="text-[13px] text-slate-400">Document Type</span>
+                <span className="text-[13px] text-white font-semibold">{subType}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
+                <span className="text-[13px] text-slate-400">Category</span>
+                <span className="text-[13px] text-slate-200">{category}</span>
               </div>
               {doc.issueDate && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                  <span className="text-[13px] text-slate-500">Issued</span>
+                <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
+                  <span className="text-[13px] text-slate-400">Issue Date</span>
                   <span className="text-[13px] text-slate-200">{formatDate(doc.issueDate)}</span>
                 </div>
               )}
               {doc.expiryDate && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                  <span className="text-[13px] text-slate-500">Expires</span>
-                  <span className={`text-[13px] font-medium ${days <= 30 ? 'text-amber-400' : days <= 90 ? 'text-amber-400' : 'text-slate-200'}`}>
+                <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
+                  <span className="text-[13px] text-slate-400">Expiry Date</span>
+                  <span className={`text-[13px] font-bold ${days <= 30 ? 'text-red-400' : days <= 90 ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {formatDate(doc.expiryDate)}
-                    {days !== null && days > 0 && ` (${days} days)`}
+                    {days !== null && days > 0 && ` (${days} days remaining)`}
                   </span>
                 </div>
               )}
-              {doc.deadline && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                  <span className="text-[13px] text-slate-500">Deadline</span>
-                  <span className="text-[13px] font-medium text-amber-400">
-                    {formatDate(doc.deadline)}
-                    {getDaysUntil(doc.deadline) > 0 && ` (${getDaysUntil(doc.deadline)} days)`}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                <span className="text-[13px] text-slate-500">Action required</span>
-                <span className={`text-[13px] font-medium ${doc.actionRequired ? 'text-amber-400' : 'text-emerald-400'}`}>
-                  {doc.actionRequired ? 'Yes' : 'No'}
+              <div className="flex justify-between items-center py-2 border-b border-slate-800/60">
+                <span className="text-[13px] text-slate-400">Expiry Status</span>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase ${
+                  doc.expiryStatus === 'expired' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                  doc.expiryStatus === 'expiring_soon' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                  'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                }`}>
+                  {doc.expiryStatus || 'valid'}
                 </span>
               </div>
-              {doc.action && (
-                <div className="flex justify-between items-center py-2 border-b border-slate-800/40">
-                  <span className="text-[13px] text-slate-500">Action</span>
-                  <span className="text-[13px] text-slate-200 font-medium">{doc.action}</span>
-                </div>
-              )}
-              {doc.priority && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-[13px] text-slate-500">Priority</span>
-                  <span className={`text-[13px] font-medium ${
-                    doc.priority === 'high' ? 'text-red-400' :
-                    doc.priority === 'medium' ? 'text-amber-400' : 'text-emerald-400'
-                  }`}>
-                    {doc.priority.charAt(0).toUpperCase() + doc.priority.slice(1)}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Why it matters */}
-          {doc.whyItMatters && (
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-5">
-              <h2 className="text-[13px] font-semibold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <AlertTriangle size={13} />
-                Why this matters
-              </h2>
-              <p className="text-[14px] text-slate-300 leading-relaxed">
-                {doc.whyItMatters}
-              </p>
-            </div>
-          )}
-
-          {/* AI Summary */}
-          <div className="bg-[#0a0f1a] border border-slate-800/60 rounded-xl p-5">
-            <h2 className="text-[13px] font-semibold text-slate-400 uppercase tracking-wider mb-2">AI Summary</h2>
-            <p className="text-[14px] text-slate-300 leading-relaxed">{doc.aiSummary}</p>
-          </div>
-
-          {/* How to get (for missing docs) */}
-          {doc.howToGet && (
-            <div className="bg-[#0a0f1a] border border-slate-800/60 rounded-xl p-5">
-              <h2 className="text-[13px] font-semibold text-slate-400 uppercase tracking-wider mb-2">How to obtain</h2>
-              <p className="text-[14px] text-slate-300 leading-relaxed">{doc.howToGet}</p>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2">
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3 pt-2">
             <button
               onClick={handleSetReminder}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/10 text-white rounded-lg text-[13px] font-medium hover:bg-white/15 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[13px] font-semibold transition-colors"
             >
-              <Bell size={14} />
-              Set Reminder
+              <Bell size={15} />
+              Set Expiry Reminder
             </button>
             <button
-              onClick={() => addToast('Added to tasks', 'success')}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-300 rounded-lg text-[13px] font-medium hover:bg-slate-800 transition-colors"
+              onClick={() => addToast('Document link shared with connected family members', 'success')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[13px] font-medium transition-colors"
             >
-              <CheckCircle size={14} />
-              Add to Tasks
-            </button>
-            <button
-              onClick={() => addToast('Shareable link copied', 'success')}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-300 rounded-lg text-[13px] font-medium hover:bg-slate-800 transition-colors"
-            >
-              <Share2 size={14} />
-              Share
-            </button>
-            <button
-              onClick={() => addToast('Export started', 'info')}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700/50 text-slate-300 rounded-lg text-[13px] font-medium hover:bg-slate-800 transition-colors"
-            >
-              <Download size={14} />
-              Export
+              <Share2 size={15} />
+              Share with Family
             </button>
           </div>
         </div>
