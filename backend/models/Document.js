@@ -29,6 +29,12 @@ const documentSchema = new mongoose.Schema({
   expiryStatus: { type: String, enum: ['valid', 'expiring_soon', 'expired', 'unknown'], default: 'valid' },
   linkedGoals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Goal' }],
 
+  // LifeFlow Private Intelligence Fields
+  processingMode: { type: String, enum: ['private', 'enhanced'], default: 'private' },
+  sensitivityLevel: { type: String, enum: ['Low', 'Medium', 'High', null], default: null },
+  sensitiveCategories: [{ type: String }],
+  privacyVerified: { type: Boolean, default: true },
+
   // Privacy & Explicit Document Sharing
   visibility: { type: String, enum: ['private', 'shared'], default: 'private' },
   sharedWith: [{

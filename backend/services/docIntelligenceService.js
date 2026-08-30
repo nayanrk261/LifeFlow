@@ -1,5 +1,6 @@
 import { groqService } from './groqService.js';
 import Notification from '../models/Notification.js';
+import { evaluateDocumentSensitivity, getProcessingProvider } from './privacyIntelligenceService.js';
 
 const SYSTEM_PROMPT = `
 You are the LifeFlow AI Document Intelligence Service.
@@ -108,80 +109,25 @@ export function checkGoalMatches(docType, docCategory, userGoals = []) {
 }
 
 /**
- * Process Full Document Analysis Pipeline
+ * Process Full Document Analysis Pipeline with LifeFlow Private Intelligence Provider Support
  */
-export async function processDocumentAnalysis({ title, documentType, category, expiryDate, number, issuedBy, userGoals = [] }) {
-  const localClassification = classifyDocumentLocally(title || documentType || '');
-  let detectedType = documentType || localClassification.documentType;
-  let detectedCategory = category || localClassification.category;
-  let confidence = localClassification.confidence;
-  let extractedFields = {};
-  let importantDates = [];
-  let aiSummary = `Document categorized as ${detectedType}.`;
+export async function processDocumentAnalysis({ title, documentType, category, expiryDate, number, issuedBy, processingMode = 'private', userGoals = [] }) {
+  // Step 1: Evaluate Document Sensitivity
+  const sensitivity = evaluateDocumentSensitivity({ title, documentType, category });
 
-  if (expiryDate) {
-    importantDates.push({ type: 'expiry', date: expiryDate, label: 'Expiration Date' });
-  }
+  // Step 2: Retrieve Provider Strategy (LocalPrivateProcessor or CloudAiProcessor)
+  const provider = getProcessingProvider(processingMode);
+  const result = await provider.process({ title, documentType, category, expiryDate, number, issuedBy });
 
-  if (number) {
-    extractedFields.documentNumber = number;
-  }
-  if (issuedBy) {
-    extractedFields.issuedBy = issuedBy;
-  }
+  const detectedType = result.documentType || documentType || 'Personal Document';
+  const detectedCategory = result.category || category || 'Personal';
+  const confidence = result.confidence || 0.90;
 
-  // If Groq AI is configured, enhance classification and field extraction
-  if (groqService.isConfigured()) {
-    try {
-      const prompt = `
-Analyze document title: "${title}".
-Given hints: documentType="${documentType || ''}", category="${category || ''}", expiryDate="${expiryDate || ''}".
-
-Identify:
-1. "documentType": Aadhaar Card | PAN Card | Passport | Driving Licence | Vehicle Insurance | Academic Marksheet | Income Certificate | Bank Document | Medical Document | Property Document | Other
-2. "category": Identity | Education | Financial | Insurance | Government | Health | Vehicle | Personal | Other
-3. "confidence": Number between 0.40 and 0.98
-4. "summary": Short 1-sentence description of the document.
-5. "extractedFields": Key-value pairs of visible fields (e.g. policyNumber, licenseNumber, institutionName, year)
-6. "importantDates": Array of objects {"type": "expiry" | "issue", "date": "YYYY-MM-DD", "label": "Expiration Date"}
-
-Return JSON format:
-{
-  "documentType": "Vehicle Insurance",
-  "category": "Insurance",
-  "confidence": 0.92,
-  "summary": "Verified vehicle insurance policy document.",
-  "extractedFields": {},
-  "importantDates": []
-}
-`;
-
-      const aiRes = await groqService.generateJSON({
-        systemPrompt: SYSTEM_PROMPT,
-        userPrompt: prompt,
-        temperature: 0.1
-      });
-
-      if (aiRes && aiRes.documentType) {
-        detectedType = aiRes.documentType;
-        detectedCategory = aiRes.category || detectedCategory;
-        confidence = typeof aiRes.confidence === 'number' ? aiRes.confidence : confidence;
-        aiSummary = aiRes.summary || aiSummary;
-        extractedFields = { ...extractedFields, ...(aiRes.extractedFields || {}) };
-        if (Array.isArray(aiRes.importantDates) && aiRes.importantDates.length > 0) {
-          importantDates = aiRes.importantDates;
-        }
-      }
-    } catch (err) {
-      console.warn('Groq Document Analysis call failed, using local classifier:', err.message);
-    }
-  }
-
-  // Calculate Expiry Status
+  // Step 3: Calculate Expiry Status & Analysis Status
   const expiryStatus = calculateExpiryStatus(expiryDate);
   const analysisStatus = confidence < 0.70 ? 'needs_review' : 'ready';
 
-  // Check Deterministic Goal Match Candidate
+  // Step 4: Check Deterministic Goal Match Candidate
   const potentialGoalMatch = checkGoalMatches(detectedType, detectedCategory, userGoals);
 
   return {
@@ -189,11 +135,15 @@ Return JSON format:
     category: detectedCategory,
     analysisStatus: analysisStatus,
     analysisConfidence: Math.round(confidence * 100) / 100,
-    extractedFields: extractedFields,
-    importantDates: importantDates,
+    extractedFields: result.extractedFields || {},
+    importantDates: result.importantDates || [],
     expiryDate: expiryDate || null,
     expiryStatus: expiryStatus,
-    aiSummary: aiSummary,
+    aiSummary: result.aiSummary,
+    processingMode: processingMode,
+    processingProvider: result.processingProvider || provider.name,
+    sensitivityLevel: sensitivity.sensitivityLevel,
+    sensitiveCategories: sensitivity.sensitiveCategories,
     potentialGoalMatch: potentialGoalMatch
   };
 }

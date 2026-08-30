@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
-import { X, Upload, FileText, Check, Shield, AlertCircle, Plus, Sparkles, CheckCircle2, ArrowRight, Loader2, Edit3, Target, Calendar } from 'lucide-react';
+import { X, Upload, FileText, Check, Shield, AlertCircle, Plus, Sparkles, CheckCircle2, ArrowRight, Loader2, Edit3, Target, Calendar, Lock, Cpu, Eye } from 'lucide-react';
 
 export default function AddDocModal({ onClose, onAdd }) {
   const [activeTab, setActiveTab] = useState('upload'); // 'upload', 'manual', 'digilocker'
   const fileInputRef = useRef(null);
 
-  // Flow stage: 'input' | 'analyzing' | 'review'
+  // Flow stage: 'input' | 'privacy_check' | 'privacy_review' | 'analyzing' | 'review'
   const [stage, setStage] = useState('input');
   const [loadingStep, setLoadingStep] = useState(0);
 
@@ -19,6 +19,10 @@ export default function AddDocModal({ onClose, onAdd }) {
   const [expiryDate, setExpiryDate] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Privacy Intelligence states
+  const [sensitivityResult, setSensitivityResult] = useState(null);
+  const [selectedProcessingMode, setSelectedProcessingMode] = useState('private'); // 'private' | 'enhanced'
+
   // Analysis result states
   const [analysisResult, setAnalysisResult] = useState(null);
   const [confirmGoalMatch, setConfirmGoalMatch] = useState(true);
@@ -26,7 +30,7 @@ export default function AddDocModal({ onClose, onAdd }) {
   const [error, setError] = useState('');
 
   const loadingSteps = [
-    'Analyzing your document...',
+    'Applying privacy-first processing filters...',
     'Identifying document type & category...',
     'Extracting important metadata & dates...',
     'Checking active LifeFlow goals for requirement matches...'
@@ -52,14 +56,46 @@ export default function AddDocModal({ onClose, onAdd }) {
     setDocTitle(cleanName);
   };
 
-  // Step 1: Start Analysis Flow
-  const handleStartAnalysis = async (e) => {
+  // Step 1: Start Privacy Sensitivity Evaluation
+  const handleStartPrivacyCheck = async (e) => {
     e.preventDefault();
     if (!selectedFile && !docTitle.trim()) {
       setError('Please select a file or enter a document title.');
       return;
     }
 
+    setStage('privacy_check');
+    setError('');
+
+    const titleToUse = docTitle.trim() || selectedFile?.name || 'Document';
+
+    try {
+      const { api } = await import('../services/api');
+      const sens = await api.checkSensitivity({
+        title: titleToUse,
+        documentType: docType,
+        category: docCategory
+      });
+
+      setSensitivityResult(sens);
+      // Give brief visual feedback for checking step
+      setTimeout(() => {
+        setStage('privacy_review');
+      }, 400);
+    } catch (err) {
+      console.warn('Sensitivity check failed, using safe fallback:', err);
+      setSensitivityResult({
+        sensitivityLevel: 'Medium',
+        sensitiveCategories: ['Personal identity information', 'Government identifiers'],
+        message: 'Checking how this document should be processed...'
+      });
+      setStage('privacy_review');
+    }
+  };
+
+  // Step 2: User Chooses Processing Mode & Executes Analysis
+  const handleSelectModeAndAnalyze = async (mode) => {
+    setSelectedProcessingMode(mode);
     setStage('analyzing');
     setLoadingStep(0);
     setError('');
@@ -79,6 +115,7 @@ export default function AddDocModal({ onClose, onAdd }) {
       issueDate: issueDate || null,
       expiryDate: expiryDate || null,
       number: docNumber || null,
+      processingMode: mode
     };
 
     try {
@@ -88,7 +125,7 @@ export default function AddDocModal({ onClose, onAdd }) {
       clearInterval(stepInterval);
       setAnalysisResult(analysis);
 
-      // Pre-fill confirmed AI fields
+      // Pre-fill confirmed fields
       if (analysis.documentType) setDocType(analysis.documentType);
       if (analysis.category) setDocCategory(analysis.category);
       if (analysis.expiryDate) setExpiryDate(analysis.expiryDate);
@@ -96,8 +133,7 @@ export default function AddDocModal({ onClose, onAdd }) {
       setStage('review');
     } catch (err) {
       clearInterval(stepInterval);
-      console.warn('Document analysis API error, falling back to manual review:', err);
-      // Fallback: Proceed to review step with local defaults so file saving never breaks
+      console.warn('Document analysis error, falling back to manual review:', err);
       setAnalysisResult({
         documentType: docType || 'Personal Document',
         category: docCategory || 'Personal',
@@ -106,13 +142,16 @@ export default function AddDocModal({ onClose, onAdd }) {
         extractedFields: {},
         expiryDate: expiryDate || null,
         aiSummary: 'File uploaded. AI analysis unavailable, please review details.',
+        processingMode: mode,
+        sensitivityLevel: sensitivityResult?.sensitivityLevel || 'Low',
+        sensitiveCategories: sensitivityResult?.sensitiveCategories || [],
         potentialGoalMatch: null
       });
       setStage('review');
     }
   };
 
-  // Step 2: Confirm & Save Document
+  // Step 3: Confirm & Save Document to Vault
   const handleFinalSave = async () => {
     setSubmitting(true);
     setError('');
@@ -132,6 +171,9 @@ export default function AddDocModal({ onClose, onAdd }) {
         analysisConfidence: analysisResult?.analysisConfidence || 0.90,
         extractedFields: analysisResult?.extractedFields || {},
         importantDates: analysisResult?.importantDates || [],
+        processingMode: selectedProcessingMode,
+        sensitivityLevel: sensitivityResult?.sensitivityLevel || analysisResult?.sensitivityLevel || 'Low',
+        sensitiveCategories: sensitivityResult?.sensitiveCategories || analysisResult?.sensitiveCategories || [],
         confirmGoalMatch: confirmGoalMatch && Boolean(analysisResult?.potentialGoalMatch),
         linkedGoalId: analysisResult?.potentialGoalMatch?.goalId || null
       };
@@ -154,18 +196,30 @@ export default function AddDocModal({ onClose, onAdd }) {
     return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20">Low Confidence ({Math.round(confidence * 100)}%)</span>;
   };
 
+  const getSensitivityBadge = (level = 'Low') => {
+    if (level === 'High') {
+      return <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-red-500/15 text-red-400 border border-red-500/30 flex items-center gap-1"><Lock size={12} /> HIGH SENSITIVITY</span>;
+    }
+    if (level === 'Medium') {
+      return <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1"><Shield size={12} /> MEDIUM SENSITIVITY</span>;
+    }
+    return <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><CheckCircle2 size={12} /> LOW SENSITIVITY</span>;
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md fade-in overflow-y-auto">
       <div className="w-full max-w-lg bg-[#0f172a] border border-slate-800 rounded-2xl p-6 shadow-2xl overflow-hidden my-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <Sparkles size={18} />
+              <Shield size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">AI Document Intelligence</h2>
-              <p className="text-[12px] text-slate-400">Upload & analyze document for goals and expiry tracking</p>
+              <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                LifeFlow Private Intelligence
+              </h2>
+              <p className="text-[12px] text-slate-400">Privacy-aware document processing & goal engine</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-white rounded-lg">
@@ -180,7 +234,7 @@ export default function AddDocModal({ onClose, onAdd }) {
           </div>
         )}
 
-        {/* INPUT STAGE */}
+        {/* 1. INPUT STAGE */}
         {stage === 'input' && (
           <div>
             {/* Tab switcher */}
@@ -213,7 +267,7 @@ export default function AddDocModal({ onClose, onAdd }) {
 
             {/* TAB 1: FILE UPLOAD */}
             {activeTab === 'upload' && (
-              <form onSubmit={handleStartAnalysis} className="space-y-4">
+              <form onSubmit={handleStartPrivacyCheck} className="space-y-4">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -273,7 +327,7 @@ export default function AddDocModal({ onClose, onAdd }) {
                     <label className="block text-[12px] font-medium text-slate-400 mb-1">Document Type Hint</label>
                     <input
                       type="text"
-                      placeholder="e.g. Identity Proof / Marksheet"
+                      placeholder="e.g. Income Certificate / Aadhaar"
                       value={docType}
                       onChange={e => setDocType(e.target.value)}
                       className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-[13px] text-slate-200 focus:outline-none focus:border-slate-600"
@@ -294,8 +348,8 @@ export default function AddDocModal({ onClose, onAdd }) {
                     disabled={!selectedFile}
                     className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-slate-950 font-bold rounded-xl text-[13px] transition-all flex items-center justify-center gap-2"
                   >
-                    <Sparkles size={16} />
-                    Analyze & Review
+                    <Shield size={16} />
+                    Check Privacy & Continue
                   </button>
                 </div>
               </form>
@@ -303,7 +357,7 @@ export default function AddDocModal({ onClose, onAdd }) {
 
             {/* TAB 2: MANUAL ENTRY */}
             {activeTab === 'manual' && (
-              <form onSubmit={handleStartAnalysis} className="space-y-3">
+              <form onSubmit={handleStartPrivacyCheck} className="space-y-3">
                 <div>
                   <label className="block text-[12px] font-medium text-slate-400 mb-1">Document Title</label>
                   <input
@@ -336,7 +390,7 @@ export default function AddDocModal({ onClose, onAdd }) {
                     <label className="block text-[12px] font-medium text-slate-400 mb-1">Document Type</label>
                     <input
                       type="text"
-                      placeholder="e.g. Aadhaar / Marksheet"
+                      placeholder="e.g. Income Certificate / Aadhaar"
                       value={docType}
                       onChange={e => setDocType(e.target.value)}
                       className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-[13px] text-slate-200 focus:outline-none focus:border-slate-600"
@@ -376,9 +430,10 @@ export default function AddDocModal({ onClose, onAdd }) {
                   <button
                     type="submit"
                     disabled={!docTitle.trim()}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] transition-colors disabled:opacity-50"
+                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    Analyze & Save
+                    <Shield size={16} />
+                    Check Privacy & Continue
                   </button>
                 </div>
               </form>
@@ -407,7 +462,113 @@ export default function AddDocModal({ onClose, onAdd }) {
           </div>
         )}
 
-        {/* ANALYZING STAGE */}
+        {/* 2. PRIVACY CHECK SCANNING STAGE */}
+        {stage === 'privacy_check' && (
+          <div className="py-12 flex flex-col items-center justify-center text-center space-y-5 fade-in">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full border-4 border-emerald-500/20 border-t-emerald-400 animate-spin flex items-center justify-center" />
+              <Shield size={22} className="text-emerald-400 absolute inset-0 m-auto animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white mb-1">LIFEFLOW PRIVATE INTELLIGENCE</h3>
+              <p className="text-[13px] text-emerald-400 font-medium italic">
+                Checking how this document should be processed...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 3. PRIVACY REVIEW & USER PROCESSING CHOICE STAGE */}
+        {stage === 'privacy_review' && sensitivityResult && (
+          <div className="space-y-5 fade-in">
+            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">DOCUMENT PRIVACY STATUS</span>
+                {getSensitivityBadge(sensitivityResult.sensitivityLevel)}
+              </div>
+              <p className="text-[13px] text-slate-200 leading-relaxed font-medium">
+                🔒 {sensitivityResult.message}
+              </p>
+              <div className="pt-2 border-t border-slate-800/80">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Detected Information Categories:</span>
+                <div className="flex flex-wrap gap-2">
+                  {(sensitivityResult.sensitiveCategories || []).map((cat, idx) => (
+                    <span key={idx} className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                      <Check size={13} className="text-emerald-400" />
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Choose Document Processing Mode:</p>
+
+              {/* MODE 1: PRIVATE MODE */}
+              <button
+                type="button"
+                onClick={() => handleSelectModeAndAnalyze('private')}
+                className="w-full text-left p-4 rounded-xl bg-slate-900/90 border-2 border-emerald-500/40 hover:border-emerald-400 hover:bg-slate-900 transition-all group relative overflow-hidden"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                    <Shield size={20} />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[14px] font-bold text-white group-hover:text-emerald-400 transition-colors">PRIVATE MODE</h4>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Recommended</span>
+                    </div>
+                    <p className="text-[12px] text-slate-300 leading-relaxed">
+                      &quot;Use privacy-first processing. Only the minimum information needed is used.&quot;
+                    </p>
+                    <p className="text-[11px] text-slate-500 pt-0.5">
+                      Local metadata extraction strategy. Zero sensitive document text sent to external cloud AI.
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* MODE 2: ENHANCED AI ANALYSIS */}
+              <button
+                type="button"
+                onClick={() => handleSelectModeAndAnalyze('enhanced')}
+                className="w-full text-left p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/40 hover:bg-slate-900 transition-all group"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[14px] font-bold text-white group-hover:text-blue-400 transition-colors">ENHANCED AI ANALYSIS</h4>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Cloud Reasoning</span>
+                    </div>
+                    <p className="text-[12px] text-slate-300 leading-relaxed">
+                      &quot;Use LifeFlow AI for deeper document understanding.&quot;
+                    </p>
+                    <p className="text-[11px] text-slate-500 pt-0.5">
+                      Sends metadata to LifeFlow Groq AI backend for deep entity structure detection.
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setStage('input')}
+                className="w-full py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px] font-medium hover:bg-slate-800"
+              >
+                Back to Edit
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 4. ANALYZING STAGE */}
         {stage === 'analyzing' && (
           <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 fade-in">
             <div className="relative">
@@ -415,25 +576,32 @@ export default function AddDocModal({ onClose, onAdd }) {
               <Sparkles size={22} className="text-emerald-400 absolute inset-0 m-auto animate-pulse" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-2">Analyzing your document...</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Analyzing document...</h3>
               <p className="text-[13px] text-emerald-400 font-medium h-6">
                 {loadingSteps[loadingStep]}
               </p>
               <p className="text-[12px] text-slate-500 mt-2">
-                File: <span className="text-slate-200 font-bold italic">&quot;{docTitle || selectedFile?.name}&quot;</span>
+                Processing Mode: <span className="text-slate-200 font-bold uppercase">{selectedProcessingMode}</span>
               </p>
             </div>
           </div>
         )}
 
-        {/* REVIEW STAGE */}
+        {/* 5. REVIEW & GOAL MATCH STAGE */}
         {stage === 'review' && analysisResult && (
           <div className="space-y-5 fade-in">
-            {/* Header / Confidence */}
+            {/* Header / Confidence & Processing Mode Badge */}
             <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">DOCUMENT DETECTED</span>
-                <h3 className="text-lg font-extrabold text-white mt-0.5">{docType}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">DOCUMENT DETECTED</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                    selectedProcessingMode === 'private' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                  }`}>
+                    {selectedProcessingMode === 'private' ? '🔒 PRIVATE MODE' : '⚡ ENHANCED AI'}
+                  </span>
+                </div>
+                <h3 className="text-lg font-extrabold text-white mt-1">{docType}</h3>
                 <p className="text-[12px] text-slate-400">Category: <span className="text-slate-200 font-semibold">{docCategory}</span></p>
               </div>
               <div>
@@ -451,26 +619,26 @@ export default function AddDocModal({ onClose, onAdd }) {
 
             {/* LIFEFLOW GOAL MATCH INSIGHT BANNER */}
             {analysisResult.potentialGoalMatch && (
-              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-slate-900 border border-emerald-500/30 space-y-3">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-[11px] uppercase tracking-wider">
-                  <Target size={14} />
+              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/70 via-slate-900 to-slate-900 border border-emerald-500/40 space-y-3 shadow-lg shadow-emerald-950/50">
+                <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-[11px] uppercase tracking-wider">
+                  <Target size={15} />
                   <span>LIFEFLOW GOAL MATCH DETECTED</span>
                 </div>
-                <p className="text-[13px] font-medium text-white">
-                  Good news! This document may complete a missing requirement (<strong className="text-emerald-400">&quot;{analysisResult.potentialGoalMatch.requirementName}&quot;</strong>) for your <strong className="text-white">&quot;{analysisResult.potentialGoalMatch.goalTitle}&quot;</strong> goal.
+                <p className="text-[13px] font-medium text-white leading-relaxed">
+                  Good news! This document fulfills the missing requirement (<strong className="text-emerald-400">&quot;{analysisResult.potentialGoalMatch.requirementName}&quot;</strong>) for your active goal <strong className="text-white">&quot;{analysisResult.potentialGoalMatch.goalTitle}&quot;</strong>.
                 </p>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[12px] text-slate-400">
-                    Goal Readiness: <strong className="text-amber-400">{analysisResult.potentialGoalMatch.currentReadiness}%</strong> → <strong className="text-emerald-400">{analysisResult.potentialGoalMatch.newReadiness}%</strong>
+                <div className="flex items-center justify-between pt-2 border-t border-emerald-500/20">
+                  <span className="text-[12px] text-slate-300 font-semibold">
+                    Goal Readiness: <span className="text-amber-400 font-bold">{analysisResult.potentialGoalMatch.currentReadiness}%</span> → <span className="text-emerald-400 font-extrabold text-[14px]">{analysisResult.potentialGoalMatch.newReadiness}%</span>
                   </span>
-                  <label className="flex items-center gap-2 text-[12px] font-semibold text-emerald-400 cursor-pointer">
+                  <label className="flex items-center gap-2 text-[12px] font-bold text-emerald-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={confirmGoalMatch}
                       onChange={(e) => setConfirmGoalMatch(e.target.checked)}
-                      className="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-400"
+                      className="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-400 w-4 h-4"
                     />
-                    Update Goal Progress
+                    Update Goal Readiness
                   </label>
                 </div>
               </div>
@@ -533,10 +701,10 @@ export default function AddDocModal({ onClose, onAdd }) {
             <div className="flex gap-3 pt-3 border-t border-slate-800">
               <button
                 type="button"
-                onClick={() => setStage('input')}
+                onClick={() => setStage('privacy_review')}
                 className="py-2.5 px-4 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-[13px] font-medium hover:bg-slate-800"
               >
-                Back to Edit
+                Back to Privacy
               </button>
               <button
                 type="button"

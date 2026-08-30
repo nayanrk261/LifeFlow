@@ -5,6 +5,7 @@ import Goal from '../models/Goal.js';
 import FamilyConnection from '../models/FamilyConnection.js';
 import { protect } from '../middleware/auth.js';
 import { processDocumentAnalysis, calculateExpiryStatus, checkAndCreateExpiryNotification } from '../services/docIntelligenceService.js';
+import { evaluateDocumentSensitivity } from '../services/privacyIntelligenceService.js';
 
 const router = express.Router();
 const memoryDocs = [];
@@ -49,10 +50,25 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
+// POST /api/documents/sensitivity-check — LifeFlow Private Intelligence Sensitivity Evaluation
+router.post('/sensitivity-check', protect, async (req, res) => {
+  try {
+    const { title, documentType, category } = req.body;
+    if (!title && !documentType) {
+      return res.status(400).json({ message: 'Document title or type is required for sensitivity check.' });
+    }
+    const evaluation = evaluateDocumentSensitivity({ title, documentType, category });
+    res.json(evaluation);
+  } catch (error) {
+    console.error('Sensitivity check error:', error);
+    res.status(500).json({ message: 'Error evaluating document sensitivity' });
+  }
+});
+
 // POST /api/documents/analyze — AI Document Analysis & Goal Requirement Matching
 router.post('/analyze', protect, async (req, res) => {
   try {
-    const { title, documentType, category, issueDate, expiryDate, number, issuedBy } = req.body;
+    const { title, documentType, category, issueDate, expiryDate, number, issuedBy, processingMode } = req.body;
     if (!title) {
       return res.status(400).json({ message: 'Document title or filename is required for analysis.' });
     }
@@ -69,6 +85,7 @@ router.post('/analyze', protect, async (req, res) => {
       expiryDate,
       number,
       issuedBy,
+      processingMode: processingMode || 'private',
       userGoals
     });
 
@@ -99,6 +116,9 @@ router.post('/', protect, async (req, res) => {
       analysisConfidence,
       extractedFields,
       importantDates,
+      processingMode,
+      sensitivityLevel,
+      sensitiveCategories,
       confirmGoalMatch,
       linkedGoalId
     } = req.body;
@@ -132,6 +152,10 @@ router.post('/', protect, async (req, res) => {
         importantDates: importantDates || [],
         expiryStatus: expiryStatus,
         linkedGoals: linkedGoals,
+        processingMode: processingMode || 'private',
+        sensitivityLevel: sensitivityLevel || 'Low',
+        sensitiveCategories: sensitiveCategories || [],
+        privacyVerified: true,
         visibility: 'private',
         sharedWith: []
       });
@@ -190,6 +214,10 @@ router.post('/', protect, async (req, res) => {
         importantDates: importantDates || [],
         expiryStatus: expiryStatus,
         linkedGoals: linkedGoals,
+        processingMode: processingMode || 'private',
+        sensitivityLevel: sensitivityLevel || 'Low',
+        sensitiveCategories: sensitiveCategories || [],
+        privacyVerified: true,
         visibility: 'private',
         sharedWith: [],
         createdAt: new Date().toISOString()
