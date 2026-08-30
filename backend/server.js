@@ -10,6 +10,8 @@ import goalRoutes from './routes/goals.js';
 import reminderRoutes from './routes/reminders.js';
 import notificationRoutes from './routes/notifications.js';
 import familyRoutes from './routes/family.js';
+import assistantRoutes from './routes/assistant.js';
+import generatorRoutes from './routes/generator.js';
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/family', familyRoutes);
+app.use('/api/assistant', assistantRoutes);
+app.use('/api/generator', generatorRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

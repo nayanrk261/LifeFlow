@@ -169,7 +169,8 @@ function AppContent() {
     addToast(`Welcome ${authUser.name}!`, 'success');
   };
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = async () => {
+    await fetchUserData();
     setScreen('overview');
     addToast('LifeFlow setup complete!', 'success');
   };

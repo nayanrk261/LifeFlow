@@ -33,6 +33,7 @@ export default function DocGenerator({ addToast }) {
 
   const [generatedContent, setGeneratedContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
 
@@ -47,26 +48,40 @@ export default function DocGenerator({ addToast }) {
     setGenStep('qa');
   };
 
-  const handleGenerate = () => {
-    const name = user?.name || profile?.firstName || 'User';
-    const age = profile?.age || 21;
-    const location = `${profile?.city || 'Pune'}, ${profile?.state || 'Maharashtra'}`;
-    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try {
+      const res = await api.generateDocumentText({
+        documentType: selectedType,
+        addressedTo: qaAnswers.addressedTo,
+        programName: qaAnswers.programName,
+        purpose: qaAnswers.purpose,
+        additionalDetails: qaAnswers.additionalDetails,
+      });
+      setGeneratedContent(res.content);
+      setGenStep('preview');
+    } catch (err) {
+      console.warn('AI document generation fallback:', err.message);
+      const name = user?.name || profile?.firstName || 'User';
+      const age = profile?.age || 21;
+      const location = `${profile?.city || 'Pune'}, ${profile?.state || 'Maharashtra'}`;
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    let text = `To,\n${qaAnswers.addressedTo || selectedType.targetDefault}\n${location}\n\nDate: ${dateStr}\n\nSubject: Application regarding ${selectedType.name} - ${qaAnswers.programName || 'Process Request'}\n\nRespected Sir/Madam,\n\nI, ${name}, aged ${age} years, residing at ${location}, respectfully submit this application for ${selectedType.name}.\n\nReason & Purpose:\n${qaAnswers.purpose || 'For official records and process verification.'}\n`;
+      let text = `To,\n${qaAnswers.addressedTo || selectedType.targetDefault}\n${location}\n\nDate: ${dateStr}\n\nSubject: Application regarding ${selectedType.name} - ${qaAnswers.programName || 'Process Request'}\n\nRespected Sir/Madam,\n\nI, ${name}, aged ${age} years, residing at ${location}, respectfully submit this application for ${selectedType.name}.\n\nReason & Purpose:\n${qaAnswers.purpose || 'For official records and process verification.'}\n`;
 
-    if (qaAnswers.programName) {
-      text += `\nProgram / Scheme Details:\n${qaAnswers.programName}\n`;
+      if (qaAnswers.programName) {
+        text += `\nProgram / Scheme Details:\n${qaAnswers.programName}\n`;
+      }
+      if (qaAnswers.additionalDetails) {
+        text += `\nAdditional Context:\n${qaAnswers.additionalDetails}\n`;
+      }
+      text += `\nI declare that the information provided above is true and accurate to the best of my knowledge. All supporting documents are attached for your verification.\n\nThanking you,\n\nYours faithfully,\n\n${name}\nLocation: ${location}\n\n--- Document Generated via LifeFlow Copilot ---`;
+
+      setGeneratedContent(text);
+      setGenStep('preview');
+    } finally {
+      setGenerating(false);
     }
-
-    if (qaAnswers.additionalDetails) {
-      text += `\nAdditional Context:\n${qaAnswers.additionalDetails}\n`;
-    }
-
-    text += `\nI declare that the information provided above is true and accurate to the best of my knowledge. All supporting documents are attached for your verification.\n\nThanking you,\n\nYours faithfully,\n\n${name}\nPhone / Contact: Available in LifeFlow Vault\nLocation: ${location}\n\n--- Document Generated via LifeFlow Copilot ---`;
-
-    setGeneratedContent(text);
-    setGenStep('preview');
   };
 
   // Export / Download Document
@@ -249,10 +264,11 @@ export default function DocGenerator({ addToast }) {
 
           <button
             onClick={handleGenerate}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[14px] transition-colors shadow-lg shadow-emerald-950/20"
+            disabled={generating}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-slate-950 font-semibold rounded-xl text-[14px] transition-colors shadow-lg shadow-emerald-950/20"
           >
-            <Sparkles size={16} />
-            Generate Document with LifeFlow AI
+            <Sparkles size={16} className={generating ? 'animate-spin' : ''} />
+            {generating ? 'Drafting Document with Groq AI...' : 'Generate Document with LifeFlow AI'}
           </button>
         </div>
       )}

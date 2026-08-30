@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Cpu, FileText, Sparkles, User } from 'lucide-react';
 import { aiResponses } from '../data/mockData';
+import { api } from '../services/api';
 
 const suggestions = [
   'What documents need my attention?',
@@ -14,7 +15,6 @@ function findResponse(query) {
   const q = query.toLowerCase().trim();
   for (const key of Object.keys(aiResponses)) {
     if (key === 'default') continue;
-    // Fuzzy match: check if query contains key words
     const words = key.split(' ');
     const matchCount = words.filter(w => q.includes(w)).length;
     if (matchCount >= words.length * 0.5) {
@@ -34,7 +34,7 @@ export default function Assistant({ documents, profile }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     const query = text || input;
     if (!query.trim()) return;
 
@@ -43,12 +43,20 @@ export default function Assistant({ documents, profile }) {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      const response = findResponse(query);
-      setMessages(prev => [...prev, { role: 'assistant', text: response.text, sources: response.sources }]);
+    try {
+      const res = await api.askAssistant(query);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        text: res.response || res.message,
+        sources: res.sources || []
+      }]);
+    } catch (err) {
+      console.warn('Assistant AI call fallback:', err.message);
+      const fallback = findResponse(query);
+      setMessages(prev => [...prev, { role: 'assistant', text: fallback.text, sources: fallback.sources }]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 600);
+    }
   };
 
   const handleKeyDown = (e) => {

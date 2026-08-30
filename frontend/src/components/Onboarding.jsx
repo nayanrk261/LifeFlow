@@ -162,30 +162,32 @@ export default function Onboarding({ onComplete }) {
     try {
       if (selectedGoal !== 'nothing') {
         const goalObj = goalOptions.find(g => g.id === selectedGoal) || goalOptions[0];
-        try {
-          await api.createGoal({
-            processType: goalObj.id,
-            title: goalObj.title,
-            category: goalObj.category,
-            progress: 25,
-            requirements: [
-              { name: 'Aadhaar Card', status: 'missing' },
-              { name: 'Identity Proof', status: 'missing' }
-            ]
-          });
-        } catch (e) {
-          console.warn('Initial goal creation error:', e.message);
-        }
+        await api.createGoal({
+          processType: goalObj.id,
+          title: goalObj.title,
+          category: goalObj.category,
+          description: goalObj.desc || '',
+          readinessScore: 25,
+          status: 'active',
+          requirements: [
+            { name: 'Aadhaar Card', status: 'missing' },
+            { name: 'Identity Proof', status: 'missing' }
+          ]
+        });
       }
 
       await updateUserProfile({
         onboardingCompleted: true
       });
 
-      onComplete();
+      if (onComplete) {
+        await onComplete();
+      }
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
-      onComplete();
+      if (onComplete) {
+        await onComplete();
+      }
     } finally {
       setSubmitting(false);
     }

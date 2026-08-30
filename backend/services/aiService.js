@@ -1,23 +1,17 @@
+import { groqService } from './groqService.js';
 import { classifyGoalRequest } from '../config/processRequirements.js';
 
 /**
- * AI Service Layer for LifeFlow Action Engine
- * Tries Gemini API if key is present, otherwise falls back smoothly to structured process rules.
+ * AI Service Layer for LifeFlow Action Engine using Groq AI
  */
 export async function analyzeUserGoalWithAI(userRequest = '') {
   const cleanRequest = userRequest.trim();
-  const apiKey = process.env.GEMINI_API_KEY;
 
-  if (apiKey) {
+  if (groqService.isConfigured()) {
     try {
-      // Lazy load @google/generative-ai if present
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-      const prompt = `
-You are the LifeFlow AI Action Engine. Analyze this user goal request: "${cleanRequest}".
-Return ONLY a valid JSON object matching this structure (no markdown formatting, no code block markers):
+      const systemPrompt = `You are the LifeFlow AI Action Engine. Analyze user goal requests and respond in JSON.`;
+      const userPrompt = `Analyze this user goal request: "${cleanRequest}".
+Return ONLY a valid JSON object matching this structure:
 {
   "processType": "scholarship | passport | driving_licence | college_admission | insurance | loan | government_scheme | certificate | custom",
   "title": "Clear concise goal title",
@@ -40,13 +34,9 @@ Return ONLY a valid JSON object matching this structure (no markdown formatting,
     }
   ],
   "aiExplanation": "A short, specific, 2-sentence summary explaining readiness and key next steps."
-}
-`;
+}`;
 
-      const response = await model.generateContent(prompt);
-      const text = response.response.text();
-      const cleanedJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanedJson);
+      const parsed = await groqService.generateJSON({ systemPrompt, userPrompt });
 
       if (parsed && parsed.title && Array.isArray(parsed.requirements)) {
         return {
@@ -60,13 +50,12 @@ Return ONLY a valid JSON object matching this structure (no markdown formatting,
         };
       }
     } catch (err) {
-      console.warn('Gemini API call failed or unconfigured, falling back to rule-based engine:', err.message);
+      console.warn('Groq AI goal analysis failed, using fallback engine:', err.message);
     }
   }
 
   // Graceful Fallback Engine
   const matchedProcess = classifyGoalRequest(cleanRequest);
-
   const fallbackExplanation = `LifeFlow identified your goal as ${matchedProcess.title}. We have mapped ${matchedProcess.requirements.length} core process requirements against your document vault.`;
 
   return {

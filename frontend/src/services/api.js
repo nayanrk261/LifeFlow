@@ -88,4 +88,8 @@ export const api = {
   removeFamilyConnection: (connectionId) => request(`/family/connections/${connectionId}`, { method: 'DELETE' }),
   getSharedDocumentsFromMember: (memberId) => request(`/family/${memberId}/shared-documents`),
   createManualFamilyMember: (memberData) => request('/family/manual', { method: 'POST', body: JSON.stringify(memberData) }),
+
+  // AI Assistant & Application Generator
+  askAssistant: (query) => request('/assistant/chat', { method: 'POST', body: JSON.stringify({ query }) }),
+  generateDocumentText: (docParams) => request('/generator/generate', { method: 'POST', body: JSON.stringify(docParams) }),
 };
