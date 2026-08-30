@@ -1,16 +1,80 @@
-# React + Vite
+# 🌊 LifeFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+### From Life Goal to Next Action
 
-Currently, two official plugins are available:
+LifeFlow is an AI-powered **Life Readiness Platform** that helps people prepare for important life goals by understanding what they want to achieve, identifying what they need, checking what they already have, finding what is missing, and generating the next actions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Instead of being just another document storage application, LifeFlow connects:
 
-## React Compiler
+**Goals → Requirements → Documents → Readiness → Actions**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 🚨 Problem
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Important life processes are fragmented.
+
+A person applying for a scholarship, preparing for a government service, applying for an opportunity, or completing an administrative process may need to manage:
+
+- Identity documents
+- Educational certificates
+- Income certificates
+- Address proofs
+- Applications
+- Deadlines
+- Family documents
+- Multiple sources of information
+
+These documents and requirements are often spread across:
+
+- Phone storage
+- Cloud storage
+- Government platforms
+- Email
+- Messaging applications
+- Physical documents
+
+Existing document platforms primarily help users **store, access, and share documents**.
+
+They do not answer the bigger question:
+
+> **"Am I actually ready for what I am trying to achieve?"**
+
+---
+
+# 💡 Solution
+
+## LifeFlow — Your AI Life Readiness Engine
+
+LifeFlow starts with the user's **goal**, rather than the document.
+
+A user tells LifeFlow what they want to achieve.
+
+LifeFlow then helps them:
+
+1. Understand the goal
+2. Identify requirements
+3. Check available documents
+4. Calculate readiness
+5. Identify missing requirements
+6. Generate an action plan
+7. Track progress
+
+### Core Flow
+
+```text
+             LIFE GOAL
+                 ↓
+        AI UNDERSTANDS GOAL
+                 ↓
+       IDENTIFY REQUIREMENTS
+                 ↓
+        CHECK USER DOCUMENTS
+                 ↓
+        CALCULATE READINESS
+                 ↓
+        IDENTIFY WHAT'S MISSING
+                 ↓
+        GENERATE ACTION PLAN
+                 ↓
+          COMPLETE THE GOAL
