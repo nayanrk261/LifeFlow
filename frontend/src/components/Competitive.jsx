@@ -56,8 +56,8 @@ const competitors = [
   {
     name: 'LifeFlow',
     highlight: true,
-    tagline: 'Personal Life-Process Copilot',
-    strengths: ['Process readiness engine', 'On-device AI', 'Action recommendations', 'Family health view'],
+    tagline: 'From Life Goal to Next Action',
+    strengths: ['Goal readiness engine', 'Private Intelligence', 'Next action recommendations', 'Family readiness view'],
   },
   {
     name: 'DigiLocker',

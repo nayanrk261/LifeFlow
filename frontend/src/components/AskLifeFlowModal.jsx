@@ -134,9 +134,9 @@ export default function AskLifeFlowModal({ initialQuery = '', onClose, onSaveGoa
           aiExplanation: `LifeFlow checked your current vault. You're ${readiness}% ready for ${title}. ${availableCount} requirements are ready and ${missingCount} required document is missing.`,
           requirements: reqs,
           actions: [
-            { _id: 'a1', title: 'Verify student profile details', priority: 'high', status: 'Completed' },
-            { _id: 'a2', title: `Obtain missing ${reqs.find(r => r.status === 'missing')?.name || 'documents'}`, priority: 'high', status: 'Not Started' },
-            { _id: 'a3', title: 'Submit final application on portal', priority: 'medium', status: 'Not Started' }
+            { title: 'Verify student profile details', priority: 'high', status: 'Completed' },
+            { title: `Obtain missing ${reqs.find(r => r.status === 'missing')?.name || 'documents'}`, priority: 'high', status: 'Not Started' },
+            { title: 'Submit final application on portal', priority: 'medium', status: 'Not Started' }
           ]
         };
 
@@ -196,7 +196,22 @@ export default function AskLifeFlowModal({ initialQuery = '', onClose, onSaveGoa
     if (!analysisResult || saving) return;
     setSaving(true);
     try {
-      await onSaveGoal(analysisResult);
+      const sanitizedGoalPayload = {
+        ...analysisResult,
+        actions: (analysisResult.actions || []).map(act => {
+          const item = {
+            title: act.title,
+            description: act.description || '',
+            priority: act.priority || 'medium',
+            status: act.status || 'Not Started'
+          };
+          if (act._id && typeof act._id === 'string' && /^[0-9a-fA-F]{24}$/.test(act._id)) {
+            item._id = act._id;
+          }
+          return item;
+        })
+      };
+      await onSaveGoal(sanitizedGoalPayload);
       onClose();
     } catch (err) {
       console.error('Save goal failed:', err);
@@ -225,7 +240,7 @@ export default function AskLifeFlowModal({ initialQuery = '', onClose, onSaveGoa
             </div>
             <div>
               <h2 className="text-base font-bold text-white tracking-tight">Ask LifeFlow Engine</h2>
-              <p className="text-[12px] text-slate-400">Goal Intelligence & Document Copilot</p>
+              <p className="text-[12px] text-slate-400">LifeFlow turns your goal into requirements, readiness, and next actions.</p>
             </div>
           </div>
           <button
@@ -244,10 +259,10 @@ export default function AskLifeFlowModal({ initialQuery = '', onClose, onSaveGoa
             <div className="space-y-6 fade-in">
               <div>
                 <h3 className="text-xl font-extrabold text-white tracking-tight">
-                  What would you like LifeFlow to help you accomplish?
+                  Tell LifeFlow what you&apos;re trying to achieve.
                 </h3>
                 <p className="text-[13px] text-slate-400 mt-1">
-                  Choose an active goal you&apos;re already working on, or tell LifeFlow about a new goal.
+                  Choose an active goal you&apos;re already working on, or tell LifeFlow about a new goal to build your action plan.
                 </p>
               </div>
 

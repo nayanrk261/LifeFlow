@@ -105,6 +105,20 @@ export default function GoalDetail({ goal, navigate, onUpdateActionStatus, onDel
             </p>
           </div>
         )}
+
+        {/* LifeFlow Guidance Bar */}
+        <div className="mt-4 p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-[12px] text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="font-semibold text-slate-200">Your goal is the starting point.</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+            <span className="text-slate-400">Understand the goal</span>
+            <span className="text-slate-600">→</span>
+            <span className="text-slate-400">Check your readiness</span>
+            <span className="text-slate-600">→</span>
+            <span className="text-amber-400">Identify what&apos;s missing</span>
+            <span className="text-slate-600">→</span>
+            <span className="text-emerald-400">Take the next action</span>
+          </div>
+        </div>
       </div>
 
       {/* Next Best Action Card */}
@@ -138,7 +152,7 @@ export default function GoalDetail({ goal, navigate, onUpdateActionStatus, onDel
         {/* Requirements Column */}
         <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-            <h2 className="text-base font-bold text-white">Process Requirements</h2>
+            <h2 className="text-base font-bold text-white">Goal Requirements</h2>
             <span className="text-[12px] text-slate-400">
               {availableReqs.length} / {requirements.length} Completed
             </span>

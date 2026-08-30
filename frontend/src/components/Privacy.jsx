@@ -89,72 +89,48 @@ export default function Privacy() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* CURRENT IMPLEMENTATION */}
+          {/* TODAY IMPLEMENTATION */}
           <div className="bg-slate-900/80 border border-emerald-500/30 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="text-[12px] font-extrabold text-emerald-400 uppercase tracking-wider">CURRENT IMPLEMENTATION</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active Today</span>
+              <span className="text-[12px] font-extrabold text-emerald-400 uppercase tracking-wider">TODAY — WEB APP MODE</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active MVP</span>
             </div>
-            <div className="space-y-2.5 text-[12px]">
-              <div className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-slate-200 font-semibold">
-                <span>1. User Document</span>
-                <span className="text-slate-500 text-[11px]">Upload / Manual</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-slate-200 font-semibold">
-                <span>2. LifeFlow Processing Layer</span>
-                <span className="text-slate-500 text-[11px]">Sensitivity Check</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-slate-200 font-semibold">
-                <span>3. Privacy Filtering (User Choice)</span>
-                <span className="text-slate-500 text-[11px]">Private vs Enhanced</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-slate-200 font-semibold">
-                <span>4. LifeFlow Backend</span>
-                <span className="text-slate-500 text-[11px]">Goal & Vault Engine</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-between text-slate-200 font-semibold">
-                <span>5. Cloud AI (Groq) when required</span>
-                <span className="text-slate-500 text-[11px]">Optional reasoning</span>
-              </div>
-            </div>
+            <ul className="space-y-2.5 text-[12px] text-slate-300">
+              <li className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center gap-2 font-semibold">
+                <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                <span>Web Application Mode</span>
+              </li>
+              <li className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center gap-2 font-semibold">
+                <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                <span>Privacy-aware local processing architecture</span>
+              </li>
+              <li className="p-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center gap-2 font-semibold">
+                <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                <span>Cloud AI available for deeper reasoning</span>
+              </li>
+            </ul>
           </div>
 
-          {/* FUTURE ON-DEVICE INFERENCE */}
+          {/* FUTURE PHONE-FIRST MODE */}
           <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="text-[12px] font-extrabold text-blue-400 uppercase tracking-wider">FUTURE ON-DEVICE INFERENCE</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Mobile & NPU</span>
+              <span className="text-[12px] font-extrabold text-blue-400 uppercase tracking-wider">FUTURE PHONE-FIRST MODE</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Mobile & Hardware</span>
             </div>
-            <div className="space-y-2.5 text-[12px]">
-              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between text-slate-300 font-semibold">
-                <span>1. User Document</span>
-                <span className="text-slate-500 text-[11px]">On-device capture</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between text-blue-400 font-semibold">
-                <span>2. On-Device AI / NPU</span>
-                <span className="text-slate-500 text-[11px]">Hardware Companion</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between text-slate-300 font-semibold">
-                <span>3. Privacy Filtering</span>
-                <span className="text-slate-500 text-[11px]">Redact sensitive fields</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between text-slate-300 font-semibold">
-                <span>4. Minimal Structured Data</span>
-                <span className="text-slate-500 text-[11px]">Metadata sync</span>
-              </div>
-              <div className="flex justify-center"><ArrowRight size={14} className="text-slate-600 rotate-90" /></div>
-              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between text-slate-300 font-semibold">
-                <span>5. LifeFlow Backend & Cloud AI</span>
-                <span className="text-slate-500 text-[11px]">Complex reasoning</span>
-              </div>
-            </div>
+            <ul className="space-y-2.5 text-[12px] text-slate-300">
+              <li className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center gap-2 font-semibold text-slate-300">
+                <Smartphone size={15} className="text-blue-400 shrink-0" />
+                <span>On-device AI provider support</span>
+              </li>
+              <li className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center gap-2 font-semibold text-slate-300">
+                <Cpu size={15} className="text-blue-400 shrink-0" />
+                <span>Lightweight sensitive document intelligence closer to the user&apos;s device</span>
+              </li>
+              <li className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center gap-2 font-semibold text-slate-300">
+                <Shield size={15} className="text-blue-400 shrink-0" />
+                <span>Potential hardware acceleration when available</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

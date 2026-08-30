@@ -1,11 +1,66 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, X, CheckCheck, AlertTriangle, Clock, CheckCircle2, Shield, ArrowRight } from 'lucide-react';
+import { Search, Bell, User, X, CheckCheck, AlertTriangle, Clock, CheckCircle2, Shield, ArrowRight, Sparkles, Menu } from 'lucide-react';
 
-export default function Header({ profile, notifications = [], markNotifRead, markAllNotifsRead, navigate, onSearch, onAcceptFamilyRequest, onDeclineFamilyRequest }) {
+const pageContextMap = {
+  'overview': { title: 'Dashboard', subtitle: 'Goal readiness overview & next actions' },
+  'ask-lifeflow': { title: 'Ask LifeFlow Engine', subtitle: 'AI goal intelligence & action plan builder' },
+  'documents': { title: 'Document Vault', subtitle: 'Personal document vault & AI analysis' },
+  'doc-intelligence': { title: 'Document Intelligence', subtitle: 'Extracted metadata & privacy details' },
+  'attention': { title: 'Needs Attention', subtitle: 'Expiring documents & missing requirement alerts' },
+  'readiness': { title: 'Goal Readiness', subtitle: 'Check requirements for any life goal' },
+  'assistant': { title: 'AI Assistant', subtitle: 'Document copilot & goal query engine' },
+  'generator': { title: 'Document Generator', subtitle: 'Draft official applications & formal letters' },
+  'reminders': { title: 'Reminders & Schedule', subtitle: 'Upcoming document deadlines & goal actions' },
+  'family': { title: 'Family Workspace', subtitle: 'Shared document readiness & family members' },
+  'vault': { title: 'Secure Vault', subtitle: 'Encrypted personal document storage' },
+  'profile': { title: 'My Account', subtitle: 'Personal profile & security settings' },
+  'notifications': { title: 'Notifications', subtitle: 'System alerts & family connection requests' },
+  'architecture': { title: 'Technical Architecture', subtitle: 'Privacy layer & NPU companion roadmap' },
+  'privacy': { title: 'Privacy & Security', subtitle: 'On-device processing & privacy principles' },
+  'competitive': { title: 'Platform Comparison', subtitle: 'LifeFlow vs alternative document tools' },
+  'goal-detail': { title: 'Goal Action Plan', subtitle: 'Detailed goal requirements & next steps' },
+};
+
+const LifeFlowLogoMark = ({ className = "w-6 h-6" }) => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      d="M5 22C5 13.5 10 7.5 16 7.5C22 7.5 27 13.5 27 22"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      className="text-emerald-400"
+    />
+    <path
+      d="M9 24C11.5 17.5 13.5 14.5 16 14.5C18.5 14.5 20.5 17.5 23 24"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className="text-teal-300"
+    />
+    <circle cx="5" cy="22" r="2.5" className="fill-emerald-400" />
+    <circle cx="16" cy="7.5" r="2.5" className="fill-emerald-400" />
+    <circle cx="27" cy="22" r="2.5" className="fill-emerald-400" />
+  </svg>
+);
+
+export default function Header({
+  screen = 'overview',
+  profile,
+  notifications = [],
+  markNotifRead,
+  markAllNotifsRead,
+  navigate,
+  onSearch,
+  onToggleMobileMenu,
+  onAcceptFamilyRequest,
+  onDeclineFamilyRequest,
+}) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const notifRef = useRef(null);
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const currentContext = pageContextMap[screen] || { title: 'Dashboard', subtitle: 'Goal readiness & next actions' };
 
   useEffect(() => {
     function handleClick(e) {
@@ -40,28 +95,70 @@ export default function Header({ profile, notifications = [], markNotifRead, mar
   };
 
   return (
-    <header className="h-14 shrink-0 border-b border-slate-800/60 bg-[#0a0f1a]/90 backdrop-blur-md flex items-center px-4 sm:px-6 gap-4 z-30">
-      {/* Search */}
-      <div className="flex-1 max-w-md">
+    <header className="h-16 shrink-0 border-b border-slate-800/80 bg-[#070c16]/95 backdrop-blur-md flex items-center px-4 sm:px-6 justify-between gap-4 z-30">
+      
+      {/* LEFT SECTION */}
+      <div className="flex items-center gap-3 shrink-0">
+        
+        {/* DESKTOP PAGE CONTEXT (Title & Subtitle - visible on md+) */}
+        <div className="hidden md:flex flex-col justify-center">
+          <h1 className="text-[17px] font-extrabold text-white tracking-tight leading-snug">
+            {currentContext.title}
+          </h1>
+          <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5 hidden lg:block">
+            {currentContext.subtitle}
+          </p>
+        </div>
+
+        {/* MOBILE BRANDING & HAMBURGER (visible on mobile <md) */}
+        <div className="flex md:hidden items-center gap-2.5">
+          <button
+            onClick={onToggleMobileMenu}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/70 transition-colors focus:outline-none"
+            aria-label="Open mobile menu"
+          >
+            <Menu size={22} />
+          </button>
+
+          <button
+            onClick={() => navigate('overview')}
+            className="flex items-center gap-2 text-left focus:outline-none"
+          >
+            <div className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
+              <LifeFlowLogoMark className="w-5 h-5" />
+            </div>
+            <span className="text-[15px] font-extrabold text-white tracking-tight">
+              LifeFlow
+            </span>
+          </button>
+        </div>
+
+      </div>
+
+      {/* CENTER: SEARCH BAR (Desktop) */}
+      <div className="flex-1 max-w-sm hidden xl:block mx-4">
         <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="Search processes, documents..."
+            placeholder="Search goals, requirements, documents..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg pl-9 pr-4 py-1.5 text-[13px] text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-slate-600 focus:bg-slate-800/70 transition-colors"
+            className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-[12px] text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
           />
         </div>
       </div>
 
-      {/* Right controls */}
-      <div className="flex items-center gap-2">
-        {/* Status indicator */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] text-emerald-400 font-medium">LifeFlow Copilot</span>
-        </div>
+      {/* RIGHT CONTROLS */}
+      <div className="flex items-center gap-2.5">
+        {/* Quick Action Button */}
+        <button
+          onClick={() => navigate('ask-lifeflow')}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-[12px] font-bold transition-all shadow-sm"
+        >
+          <Sparkles size={14} />
+          Ask LifeFlow
+        </button>
 
         {/* Notifications Anchor */}
         <div ref={notifRef} className="relative">

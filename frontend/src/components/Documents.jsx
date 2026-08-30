@@ -31,13 +31,56 @@ export default function Documents({ documents = [], navigate, onAddDoc }) {
             {documents.length} document{documents.length !== 1 ? 's' : ''} stored and analyzed by LifeFlow AI
           </p>
         </div>
-        <button
-          onClick={onAddDoc}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-[13px] font-bold shadow-lg shadow-emerald-500/20 transition-all shrink-0"
-        >
-          <Plus size={15} />
-          Add Document
-        </button>
+      </div>
+
+      {/* BRING DOCUMENTS TOGETHER SOURCE SELECTION BANNER */}
+      <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[14px] font-bold text-white tracking-tight">Bring documents together</h2>
+            <p className="text-[12px] text-slate-400">Add documents into your readiness workspace from multiple sources</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <button
+            onClick={onAddDoc}
+            className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Upload size={16} />
+            </div>
+            <div>
+              <span className="text-[13px] font-bold text-slate-200 group-hover:text-emerald-400 transition-colors block">Upload from Device</span>
+              <span className="text-[11px] text-slate-500">PDF, PNG, JPG files</span>
+            </div>
+          </button>
+
+          <button
+            onClick={onAddDoc}
+            className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-teal-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center shrink-0">
+              <FileText size={16} />
+            </div>
+            <div>
+              <span className="text-[13px] font-bold text-slate-200 group-hover:text-teal-400 transition-colors block">Add Manually</span>
+              <span className="text-[11px] text-slate-500">Enter title & metadata</span>
+            </div>
+          </button>
+
+          <button
+            onClick={onAddDoc}
+            className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+              <Shield size={16} />
+            </div>
+            <div>
+              <span className="text-[13px] font-bold text-slate-200 group-hover:text-blue-400 transition-colors block">Connect DigiLocker</span>
+              <span className="text-[11px] text-slate-500">Integration Preview</span>
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* YOUR DOCUMENT INSIGHTS BANNER */}
@@ -168,7 +211,7 @@ export default function Documents({ documents = [], navigate, onAddDoc }) {
             </div>
             <h3 className="text-[15px] font-semibold text-white mb-1">No documents yet</h3>
             <p className="text-[13px] text-slate-400 max-w-sm mx-auto mb-6">
-              Add your important government, education, or financial documents to start tracking process readiness.
+              Add your important government, education, or financial documents to start tracking goal readiness.
             </p>
             <button
               onClick={onAddDoc}

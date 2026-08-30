@@ -439,24 +439,76 @@ export default function AddDocModal({ onClose, onAdd }) {
               </form>
             )}
 
-            {/* TAB 3: DIGILOCKER */}
+            {/* TAB 3: DIGILOCKER CONNECT FLOW & ARCHITECTURE PREVIEW */}
             {activeTab === 'digilocker' && (
-              <div className="space-y-4 py-2 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-blue-400">
-                  <Shield size={24} />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-semibold text-white">DigiLocker Integration</h3>
-                  <p className="text-[13px] text-slate-400 max-w-sm mx-auto mt-1 leading-relaxed">
-                    DigiLocker OAuth integration ready for government API keys.
+              <div className="space-y-4 py-2 fade-in text-left">
+                <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Shield size={14} />
+                      DIGILOCKER INTEGRATION PREVIEW
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">
+                      Requires Authorization
+                    </span>
+                  </div>
+                  <h3 className="text-[15px] font-bold text-white">Bring Official Documents into LifeFlow</h3>
+                  <p className="text-[12px] text-slate-300 leading-relaxed">
+                    DigiLocker integration is designed to help bring eligible official documents into your LifeFlow readiness workspace.
                   </p>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-[13px] font-medium"
-                >
-                  Close
-                </button>
+
+                {/* Important Distinction Callout */}
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                  <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block">WHY THIS MATTERS</span>
+                  <p className="text-[12px] text-slate-300 leading-relaxed">
+                    LifeFlow is not trying to replace DigiLocker. DigiLocker stores or provides official documents. LifeFlow helps you understand how those documents help you complete a goal.
+                  </p>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[12px] flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Current Status:</span>
+                  <span className="text-amber-400 font-bold">Integration preview / Requires official authorization</span>
+                </div>
+
+                {/* Supported Provider Architecture */}
+                <div>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Supported Document Providers:</span>
+                  <div className="space-y-1.5 text-[12px]">
+                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="font-semibold text-slate-200">1. DigiLocker Provider</span>
+                      <span className="text-blue-400 text-[11px] font-bold">Official Ecosystem</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="font-semibold text-slate-200">2. Device Upload Provider</span>
+                      <span className="text-emerald-400 text-[11px] font-bold">PDF / PNG / JPG</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="font-semibold text-slate-200">3. Manual Entry Provider</span>
+                      <span className="text-teal-400 text-[11px] font-bold">User Metadata</span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="font-semibold text-slate-200">4. Future Connected Services</span>
+                      <span className="text-slate-500 text-[11px]">Academic & Bank</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setActiveTab('upload')}
+                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] transition-all"
+                  >
+                    Upload Document Instead
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[13px] font-semibold"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>

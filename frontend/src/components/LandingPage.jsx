@@ -1,15 +1,28 @@
 import { ArrowRight, Shield, Cpu, Zap, FileText, Eye, Bell, CheckCircle, ChevronRight, Lock, Smartphone, Sparkles } from 'lucide-react';
 
+const LifeFlowLogoMark = ({ className = "w-6 h-6" }) => (
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M5 22C5 13.5 10 7.5 16 7.5C22 7.5 27 13.5 27 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-emerald-400" />
+    <path d="M9 24C11.5 17.5 13.5 14.5 16 14.5C18.5 14.5 20.5 17.5 23 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-teal-300" />
+    <circle cx="5" cy="22" r="2.5" className="fill-emerald-400" />
+    <circle cx="16" cy="7.5" r="2.5" className="fill-emerald-400" />
+    <circle cx="27" cy="22" r="2.5" className="fill-emerald-400" />
+  </svg>
+);
+
 export default function LandingPage({ onGetStarted, onDemo }) {
   return (
     <div className="min-h-screen bg-[#020617] overflow-x-hidden">
       {/* Top Nav */}
       <nav className="flex items-center justify-between px-6 sm:px-10 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-emerald-900/20">
-            L
+          <div className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
+            <LifeFlowLogoMark className="w-6 h-6" />
           </div>
-          <span className="text-[16px] font-bold text-slate-100 tracking-tight">LifeFlow</span>
+          <div>
+            <span className="text-[16px] font-extrabold text-white tracking-tight block">LifeFlow</span>
+            <span className="text-[10px] text-slate-400 font-semibold tracking-wide hidden sm:block">From Life Goal to Next Action</span>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -32,14 +45,14 @@ export default function LandingPage({ onGetStarted, onDemo }) {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
           <Sparkles size={12} className="text-emerald-400" />
-          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">AI-Powered Personal Life-Process Copilot</span>
+          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">From Life Goal to Next Action</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white leading-tight tracking-tight">
-          Navigate life processes.
+          Know what you need.
           <br />
           <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-slate-200 bg-clip-text text-transparent">
-            One clear step at a time.
+            Know what to do next.
           </span>
         </h1>
 
@@ -107,10 +120,10 @@ export default function LandingPage({ onGetStarted, onDemo }) {
       <footer className="border-t border-slate-800/60 py-8">
         <div className="max-w-5xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-[10px]">
-              L
+            <div className="w-6 h-6 rounded-md bg-slate-900 border border-slate-800 flex items-center justify-center">
+              <LifeFlowLogoMark className="w-4 h-4" />
             </div>
-            <span className="text-[13px] text-slate-500">LifeFlow — Personal Process Copilot</span>
+            <span className="text-[13px] text-slate-500">LifeFlow — From Life Goal to Next Action</span>
           </div>
           <p className="text-[12px] text-slate-600">Full-Stack Application • React + Node.js + Express + MongoDB</p>
         </div>

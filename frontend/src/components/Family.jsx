@@ -394,235 +394,296 @@ export default function Family({ familyData = {}, userDocuments = [], onRefresh,
         </div>
       )}
 
-      {/* MODAL 1: ADD FAMILY MEMBER (BY EMAIL OR INVITE OR MANUAL) */}
+      {/* MODAL 1: ADD FAMILY MEMBER (STEP 1 CHOICE + CONNECT VS INVITE FLOW) */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm fade-in">
-          <div className="w-full max-w-lg bg-[#0f172a] border border-slate-800 rounded-2xl p-6 shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white">Add Family Member</h2>
-              <button onClick={() => setShowAddModal(false)}>
-                <X size={18} className="text-slate-400 hover:text-white" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto fade-in">
+          <div className="relative w-full max-w-lg bg-[#0f172a] border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl my-auto max-h-[90vh] flex flex-col overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <Users size={18} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white tracking-tight">Add Family Member</h2>
+                  <p className="text-[12px] text-slate-400">Connect accounts or generate invitation link</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X size={18} />
               </button>
             </div>
 
-            {/* Mode Switcher */}
-            <div className="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl mb-5">
-              <button
-                onClick={() => { setAddMode('email'); setNonUserResult(null); setInviteLinkResult(null); }}
-                className={`py-2 text-[12px] font-semibold rounded-lg transition-all ${
-                  addMode === 'email' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Add by Email
-              </button>
-              <button
-                onClick={() => { setAddMode('invite'); setNonUserResult(null); setInviteLinkResult(null); }}
-                className={`py-2 text-[12px] font-semibold rounded-lg transition-all ${
-                  addMode === 'invite' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Generate Invite Link
-              </button>
-              <button
-                onClick={() => { setAddMode('manual'); setNonUserResult(null); setInviteLinkResult(null); }}
-                className={`py-2 text-[12px] font-semibold rounded-lg transition-all ${
-                  addMode === 'manual' ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Manual Record
-              </button>
+            {/* Scrollable Body Container */}
+            <div className="overflow-y-auto max-h-[calc(90vh-6rem)] py-4 pr-1 space-y-5">
+
+              {/* STEP 1: INITIAL CHOICE */}
+              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                <p className="text-[13px] font-bold text-slate-200">
+                  Is this person already using LifeFlow?
+                </p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => { setAddMode('email'); setNonUserResult(null); setInviteLinkResult(null); }}
+                    className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                      addMode === 'email'
+                        ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                        : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="text-[12px] font-extrabold text-emerald-400 uppercase tracking-wider block mb-1">OPTION A</span>
+                    <span className="text-[13px] font-bold">Connect LifeFlow Member</span>
+                    <span className="text-[11px] text-slate-400 mt-1">Send request by registered email</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setAddMode('invite'); setNonUserResult(null); setInviteLinkResult(null); }}
+                    className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                      addMode === 'invite'
+                        ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                        : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="text-[12px] font-extrabold text-emerald-400 uppercase tracking-wider block mb-1">OPTION B</span>
+                    <span className="text-[13px] font-bold">Invite to LifeFlow</span>
+                    <span className="text-[11px] text-slate-400 mt-1">Generate shareable invite link</span>
+                  </button>
+                </div>
+
+                <div className="pt-1 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => { setAddMode('manual'); setNonUserResult(null); setInviteLinkResult(null); }}
+                    className="text-[11px] text-slate-400 hover:text-slate-200 underline font-medium"
+                  >
+                    Or add unlinked manual record
+                  </button>
+                </div>
+              </div>
+
+              {/* OPTION A: CONNECT LIFEFLOW MEMBER (BY EMAIL) */}
+              {addMode === 'email' && !nonUserResult && !inviteLinkResult && (
+                <form onSubmit={handleConnectByEmail} className="space-y-4 fade-in">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-slate-300 mb-1.5">
+                      Family Member&apos;s LifeFlow Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. father@example.com"
+                      value={connectEmail}
+                      onChange={e => setConnectEmail(e.target.value)}
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-slate-300 mb-1.5">
+                      Relationship
+                    </label>
+                    <select
+                      value={connectRel}
+                      onChange={e => setConnectRel(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-400 appearance-none"
+                    >
+                      {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-[12px] text-slate-400 leading-relaxed">
+                    <p className="font-semibold text-slate-300 mb-0.5 flex items-center gap-1">
+                      <Lock size={13} className="text-emerald-400" />
+                      Privacy & Permission Control:
+                    </p>
+                    <p>Connecting with a family member sends a request. No documents are automatically shared — permissions remain explicitly controlled by you.</p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-[13px] shadow-lg shadow-emerald-500/20 transition-all"
+                    >
+                      {submitting ? 'Checking User...' : 'Send Connection Request'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* NON-USER PROMPT FOR CONNECTING EMAIL */}
+              {nonUserResult && (
+                <div className="space-y-4 text-center py-2 fade-in">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                    <AlertCircle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-[16px] font-bold text-white">This person isn&apos;t on LifeFlow yet</h3>
+                    <p className="text-[13px] text-slate-400 mt-1">
+                      No account registered for <span className="font-semibold text-slate-200">{nonUserResult.email}</span>. You can generate an invitation link to invite them.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => setNonUserResult(null)}
+                      className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px] font-semibold"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={() => { setAddMode('invite'); setConnectEmail(nonUserResult.email); setNonUserResult(null); }}
+                      className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] shadow-lg shadow-emerald-500/20"
+                    >
+                      Invite to LifeFlow
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* OPTION B: INVITE TO LIFEFLOW */}
+              {addMode === 'invite' && !inviteLinkResult && (
+                <div className="space-y-4 fade-in">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 text-left space-y-2">
+                    <span className="text-[11px] font-extrabold text-emerald-400 uppercase tracking-wider block">INVITE TO LIFEFLOW</span>
+                    <h4 className="text-[15px] font-bold text-white">Invite your family member to LifeFlow</h4>
+                    <p className="text-[12px] text-slate-300 leading-relaxed">
+                      LifeFlow helps family members manage requirements, check readiness, and securely share document permissions for shared goals.
+                    </p>
+                    <p className="text-[11px] font-bold text-emerald-400 italic pt-1">
+                      &quot;Know what you need. Know what you have. Know what to do next.&quot;
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[12px] font-semibold text-slate-300 mb-1">Relationship</label>
+                      <select
+                        value={connectRel}
+                        onChange={e => setConnectRel(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-400 appearance-none"
+                      >
+                        {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-slate-300 mb-1">Recipient Email (Optional)</label>
+                      <input
+                        type="email"
+                        placeholder="e.g. sister@example.com"
+                        value={connectEmail}
+                        onChange={e => setConnectEmail(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleCreateInvite(connectRel, connectEmail)}
+                    disabled={submitting}
+                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-slate-950 font-bold rounded-xl text-[14px] shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Share2 size={16} />
+                    {submitting ? 'Generating Invitation...' : 'Generate Invitation Flow'}
+                  </button>
+                </div>
+              )}
+
+              {/* INVITATION LINK GENERATED DISPLAY */}
+              {inviteLinkResult && (
+                <div className="space-y-4 text-center py-2 fade-in">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-[16px] font-bold text-white">Invitation Flow Ready</h3>
+                    <p className="text-[12px] text-slate-400 mt-1">
+                      Copy the invitation link or use native device sharing below to invite your family member.
+                    </p>
+                  </div>
+
+                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-left">
+                    <p className="text-[11px] font-semibold text-slate-400 mb-1 uppercase">Invitation Link:</p>
+                    <p className="text-[12px] font-mono text-emerald-400 break-all select-all">{inviteLinkResult}</p>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => handleShareInviteLink(inviteLinkResult)}
+                      className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all"
+                    >
+                      <Copy size={15} /> Copy Link
+                    </button>
+                    <button
+                      onClick={() => handleShareInviteLink(inviteLinkResult)}
+                      className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-[13px] flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Share2 size={15} /> Share Invitation
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* MODE 3: MANUAL RECORD */}
+              {addMode === 'manual' && (
+                <form onSubmit={handleSaveManual} className="space-y-4 fade-in">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-slate-300 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ramesh Sharma"
+                      value={manualName}
+                      onChange={e => setManualName(e.target.value)}
+                      required
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-slate-300 mb-1">Relationship</label>
+                    <select
+                      value={manualRel}
+                      onChange={e => setManualRel(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-400 appearance-none"
+                    >
+                      {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddModal(false)}
+                      className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px] font-semibold hover:bg-slate-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] shadow-lg shadow-emerald-500/20 transition-all"
+                    >
+                      {submitting ? 'Saving...' : 'Add Record'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
             </div>
-
-            {/* MODE 1: ADD BY EMAIL */}
-            {addMode === 'email' && !nonUserResult && !inviteLinkResult && (
-              <form onSubmit={handleConnectByEmail} className="space-y-4">
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Family Member's LifeFlow Email</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. brother@example.com"
-                    value={connectEmail}
-                    onChange={e => setConnectEmail(e.target.value)}
-                    required
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Relationship</label>
-                  <select
-                    value={connectRel}
-                    onChange={e => setConnectRel(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600 appearance-none"
-                  >
-                    {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[12px] text-slate-400">
-                  <p className="font-semibold text-slate-300 mb-1">Privacy Notice:</p>
-                  <p>Connecting with a family member does NOT expose your documents. Every document remains private until explicitly shared.</p>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px] hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[13px]"
-                  >
-                    {submitting ? 'Searching User...' : 'Send Connection Request'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* NON-USER FOUND PROMPT */}
-            {nonUserResult && (
-              <div className="space-y-4 text-center py-2 fade-in">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-                  <AlertCircle size={24} />
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-bold text-white">This person isn't on LifeFlow yet</h3>
-                  <p className="text-[13px] text-slate-400 mt-1">
-                    No account registered for <span className="font-semibold text-slate-200">{nonUserResult.email}</span>. You can generate a secure invitation link to join.
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-3">
-                  <button
-                    onClick={() => setNonUserResult(null)}
-                    className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px]"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={() => handleCreateInvite(nonUserResult.relationship, nonUserResult.email)}
-                    disabled={submitting}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[13px]"
-                  >
-                    {submitting ? 'Generating...' : 'Invite to LifeFlow'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* MODE 2: GENERATE INVITE LINK DIRECTLY */}
-            {addMode === 'invite' && !inviteLinkResult && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Relationship</label>
-                  <select
-                    value={connectRel}
-                    onChange={e => setConnectRel(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600 appearance-none"
-                  >
-                    {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Recipient Email (Optional)</label>
-                  <input
-                    type="email"
-                    placeholder="e.g. sister@example.com"
-                    value={connectEmail}
-                    onChange={e => setConnectEmail(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600"
-                  />
-                </div>
-
-                <button
-                  onClick={() => handleCreateInvite(connectRel, connectEmail)}
-                  disabled={submitting}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[14px]"
-                >
-                  {submitting ? 'Generating Link...' : 'Generate Secure Invitation Link'}
-                </button>
-              </div>
-            )}
-
-            {/* INVITATION LINK GENERATED DISPLAY */}
-            {inviteLinkResult && (
-              <div className="space-y-4 text-center py-2 fade-in">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-                  <CheckCircle2 size={24} />
-                </div>
-                <h3 className="text-[16px] font-bold text-white">Invitation Link Ready</h3>
-
-                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl text-left">
-                  <p className="text-[11px] font-semibold text-slate-400 mb-1 uppercase">Invitation Link:</p>
-                  <p className="text-[12px] font-mono text-emerald-400 break-all">{inviteLinkResult}</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleShareInviteLink(inviteLinkResult)}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[13px] flex items-center justify-center gap-1.5"
-                  >
-                    <Share2 size={15} /> Share / Copy Link
-                  </button>
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-[13px]"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* MODE 3: MANUAL RECORD */}
-            {addMode === 'manual' && (
-              <form onSubmit={handleSaveManual} className="space-y-4">
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Ramesh Sharma"
-                    value={manualName}
-                    onChange={e => setManualName(e.target.value)}
-                    required
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[12px] font-medium text-slate-400 mb-1.5">Relationship</label>
-                  <select
-                    value={manualRel}
-                    onChange={e => setManualRel(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2.5 text-[14px] text-slate-200 focus:outline-none focus:border-slate-600 appearance-none"
-                  >
-                    {relationshipOptions.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-xl text-[13px]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold rounded-xl text-[13px]"
-                  >
-                    {submitting ? 'Saving...' : 'Add Record'}
-                  </button>
-                </div>
-              </form>
-            )}
           </div>
         </div>
       )}

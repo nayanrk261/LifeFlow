@@ -122,7 +122,7 @@ export default function Auth({ onAuthSuccess, onBack }) {
         </h1>
         <p className="text-[14px] text-slate-500 mb-8">
           {isSignup
-            ? 'Start managing your important processes & documents securely.'
+            ? 'Know what you need. Know what you have. Know what to do next.'
             : 'Sign in to access your personal LifeFlow dashboard.'}
         </p>
 

@@ -59,9 +59,9 @@ export default function Readiness({ documents = [], navigate, onSaveGoal }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white tracking-tight">Process Readiness Checker</h1>
-        <p className="text-[13px] text-slate-500 mt-0.5">
-          Select a process to check your document readiness and see missing requirements.
+        <h1 className="text-xl font-bold text-white tracking-tight">Goal Readiness Checker</h1>
+        <p className="text-[13px] text-slate-400 mt-0.5">
+          Readiness is not just about storing documents. LifeFlow connects what you have with what you want to achieve.
         </p>
       </div>
 
@@ -69,8 +69,8 @@ export default function Readiness({ documents = [], navigate, onSaveGoal }) {
       {!selectedProcess ? (
         <div className="space-y-6 fade-in">
           <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-6 sm:p-8">
-            <h2 className="text-lg font-semibold text-slate-100 mb-1">What do you want to prepare for?</h2>
-            <p className="text-[13px] text-slate-500 mb-6">Choose from categorized life processes below:</p>
+            <h2 className="text-lg font-semibold text-slate-100 mb-1">What are you preparing for?</h2>
+            <p className="text-[13px] text-slate-500 mb-6">Choose from categorized goals below:</p>
 
             <div className="space-y-6">
               {processCategories.map(cat => (
@@ -106,7 +106,7 @@ export default function Readiness({ documents = [], navigate, onSaveGoal }) {
             onClick={() => setSelectedProcess(null)}
             className="text-[13px] text-slate-400 hover:text-white transition-colors flex items-center gap-1.5"
           >
-            ← Choose another process
+            ← Choose another goal
           </button>
 
           {(() => {
@@ -116,7 +116,7 @@ export default function Readiness({ documents = [], navigate, onSaveGoal }) {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4 border-b border-slate-800/60 pb-6">
                   <div>
-                    <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Selected Process</span>
+                    <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Selected Goal</span>
                     <h2 className="text-2xl font-bold text-white mt-0.5">{selectedProcess.name}</h2>
                     <p className="text-[13px] text-slate-400 mt-1">{selectedProcess.desc}</p>
                   </div>

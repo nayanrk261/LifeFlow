@@ -55,6 +55,7 @@ function AppContent() {
   const [showAddDoc, setShowAddDoc] = useState(false);
   const [showAskLifeFlow, setShowAskLifeFlow] = useState(false);
   const [askLifeFlowQuery, setAskLifeFlowQuery] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   // Toast system
@@ -426,15 +427,23 @@ function AppContent() {
     <div className="min-h-screen bg-[#020617]">
       {showShell ? (
         <div className="flex h-screen overflow-hidden">
-          <Sidebar screen={screen} navigate={navigate} unreadNotifCount={notifications.filter(n => !n.read).length} />
+          <Sidebar
+            screen={screen}
+            navigate={(s, p) => { setMobileOpen(false); navigate(s, p); }}
+            unreadNotifCount={notifications.filter(n => !n.read).length}
+            mobileOpen={mobileOpen}
+            onCloseMobile={() => setMobileOpen(false)}
+          />
 
           <div className="flex-1 flex flex-col overflow-hidden">
             <Header
+              screen={screen}
               profile={profile}
               notifications={notifications}
               markNotifRead={handleMarkNotifRead}
               markAllNotifsRead={handleMarkAllNotifsRead}
-              navigate={navigate}
+              navigate={(s, p) => { setMobileOpen(false); navigate(s, p); }}
+              onToggleMobileMenu={() => setMobileOpen(prev => !prev)}
               onAcceptFamilyRequest={handleAcceptFamilyRequest}
               onDeclineFamilyRequest={handleDeclineFamilyRequest}
             />
@@ -445,7 +454,7 @@ function AppContent() {
             </main>
           </div>
 
-          <BottomNav screen={screen} navigate={navigate} />
+          <BottomNav screen={screen} navigate={(s, p) => { setMobileOpen(false); navigate(s, p); }} />
         </div>
       ) : (
         renderScreen()

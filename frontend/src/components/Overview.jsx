@@ -73,9 +73,11 @@ export default function Overview({ documents = [], goals = [], navigate, onAddDo
         </div>
 
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-[12px] uppercase tracking-wider">
-            <Sparkles size={16} />
-            <span>LIFEFLOW ACTION ENGINE</span>
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold uppercase tracking-wider">
+            <span className="text-emerald-400 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
+              <Sparkles size={14} />
+              LIFEFLOW • FROM LIFE GOAL TO NEXT ACTION
+            </span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
@@ -83,7 +85,7 @@ export default function Overview({ documents = [], goals = [], navigate, onAddDo
           </h2>
 
           <p className="text-[13px] sm:text-[14px] text-slate-300 max-w-2xl leading-relaxed">
-            Tell LifeFlow your goal. We analyze your vault and connected family documents to tell you what you have, what you&apos;re missing, and your exact next best action.
+            See what you&apos;re ready for, what you&apos;re missing, and what to do next. Tell LifeFlow your goal to analyze requirements and generate your personalized action plan.
           </p>
 
           {/* Goal Query Form */}
@@ -198,6 +200,26 @@ export default function Overview({ documents = [], goals = [], navigate, onAddDo
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* EMPTY GOALS STATE */}
+      {goals.length === 0 && (
+        <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-6 text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto">
+            <Target size={20} />
+          </div>
+          <h3 className="text-[16px] font-bold text-white">No active goal yet.</h3>
+          <p className="text-[13px] text-slate-400 max-w-md mx-auto leading-relaxed">
+            Tell LifeFlow what you&apos;re preparing for, and we&apos;ll help you understand what comes next.
+          </p>
+          <button
+            onClick={() => onOpenAskLifeFlow('')}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[13px] shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            <Sparkles size={15} />
+            Create Your First Goal
+          </button>
         </div>
       )}
 

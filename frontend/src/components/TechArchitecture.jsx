@@ -40,35 +40,73 @@ export default function TechArchitecture() {
       <div className="bg-[#0a0f1a] border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-6">
         <h2 className="text-lg font-bold text-white">System Architecture & Processing Pipeline</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl p-5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
-              <Shield size={18} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* CURRENT MVP */}
+          <div className="bg-slate-900/80 border border-emerald-500/30 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="text-[12px] font-extrabold text-emerald-400 uppercase tracking-wider">CURRENT MVP</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Web Build</span>
             </div>
-            <h3 className="text-[14px] font-semibold text-slate-200 mb-1">1. Sensitivity Check & Selection</h3>
-            <p className="text-[12px] text-slate-400 leading-relaxed">
-              LifeFlow Private Intelligence evaluates sensitivity levels (Low/Medium/High) and identifies sensitive categories.
-            </p>
+            <div className="flex flex-col gap-2 text-[12px] font-semibold text-slate-200">
+              <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-between">
+                <span>Web App</span>
+                <span className="text-[11px] text-slate-400 font-mono">React Frontend</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-between">
+                <span>Privacy Intelligence Layer</span>
+                <span className="text-[11px] text-emerald-400 font-mono">Sensitivity Check</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-between">
+                <span>Backend</span>
+                <span className="text-[11px] text-slate-400 font-mono">Node / Express / Mongo</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-between">
+                <span>Groq AI</span>
+                <span className="text-[11px] text-slate-400 font-mono">Llama 3 Reasoning</span>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl p-5">
-            <div className="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center mb-3">
-              <Cpu size={18} />
+          {/* FUTURE HACKATHON BUILD */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="text-[12px] font-extrabold text-blue-400 uppercase tracking-wider">FUTURE HACKATHON BUILD</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">On-Device NPU</span>
             </div>
-            <h3 className="text-[14px] font-semibold text-slate-200 mb-1">2. Provider Strategy Abstraction</h3>
-            <p className="text-[12px] text-slate-400 leading-relaxed">
-              Routes processing to LocalPrivateProcessor or CloudAiProcessor. Built to seamlessly register a mobile NPU provider.
-            </p>
-          </div>
-
-          <div className="bg-slate-800/30 border border-slate-700/40 rounded-xl p-5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
-              <Zap size={18} />
+            <div className="flex flex-col gap-2 text-[12px] font-semibold text-slate-300">
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>iQOO Device</span>
+                <span className="text-[11px] text-blue-400 font-mono">Snapdragon Companion</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>On-device AI / Local Model</span>
+                <span className="text-[11px] text-blue-400 font-mono">NPU Acceleration</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>Sensitive document intelligence</span>
+                <span className="text-[11px] text-slate-400 font-mono">Local Parsing</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>Minimal structured context</span>
+                <span className="text-[11px] text-slate-400 font-mono">Redacted Data</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>LifeFlow backend</span>
+                <span className="text-[11px] text-slate-400 font-mono">Goal Engine</span>
+              </div>
+              <div className="text-center text-slate-600 font-bold">↓</div>
+              <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-800 flex items-center justify-between">
+                <span>Cloud AI for complex reasoning</span>
+                <span className="text-[11px] text-slate-400 font-mono">Groq Deep AI</span>
+              </div>
             </div>
-            <h3 className="text-[14px] font-semibold text-slate-200 mb-1">3. Action & Readiness Engine</h3>
-            <p className="text-[12px] text-slate-400 leading-relaxed">
-              Compares document dates & metadata against active goal requirements to output readiness scores (e.g. 80% → 100%).
-            </p>
           </div>
         </div>
       </div>

@@ -220,7 +220,7 @@ export default function Onboarding({ onComplete }) {
               Let's set up your LifeFlow.
             </h1>
             <p className="text-[15px] text-slate-400 max-w-md mx-auto leading-relaxed mb-8">
-              LifeFlow uses your profile and documents to help you prepare for important life processes — step by step.
+              LifeFlow helps you understand what you need, what you have, and what to do next — for any life goal.
             </p>
             <button
               onClick={() => setStep(2)}
@@ -320,7 +320,7 @@ export default function Onboarding({ onComplete }) {
           <div className="fade-in">
             <h2 className="text-2xl font-bold text-white mb-1">Life Context</h2>
             <p className="text-[14px] text-slate-500 mb-6">
-              This information helps LifeFlow suggest relevant processes. You can update it later.
+              This information helps LifeFlow suggest relevant goals. You can update it later.
             </p>
 
             <div className="space-y-3">
@@ -369,7 +369,7 @@ export default function Onboarding({ onComplete }) {
             <div>
               <h2 className="text-2xl font-bold text-white mb-1">Add Documents</h2>
               <p className="text-[14px] text-slate-500">
-                Bring your documents into LifeFlow to start checking process requirements.
+                Bring your documents into LifeFlow to start checking goal readiness.
               </p>
             </div>
 
@@ -475,7 +475,7 @@ export default function Onboarding({ onComplete }) {
           <div className="fade-in">
             <h2 className="text-2xl font-bold text-white mb-1">What would you like to prepare for?</h2>
             <p className="text-[14px] text-slate-500 mb-6">
-              Select a process to initialize your LifeFlow readiness tracker, or skip for now.
+              Select a goal to initialize your LifeFlow readiness tracker, or skip for now.
             </p>
 
             <div className="space-y-2.5 mb-8">

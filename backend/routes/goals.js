@@ -231,6 +231,19 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ message: 'Process type and title are required' });
     }
 
+    const sanitizedActions = (actions || []).map(act => {
+      const item = {
+        title: act.title,
+        description: act.description || '',
+        priority: act.priority || 'medium',
+        status: act.status || 'Not Started'
+      };
+      if (act._id && typeof act._id === 'string' && /^[0-9a-fA-F]{24}$/.test(act._id)) {
+        item._id = act._id;
+      }
+      return item;
+    });
+
     if (isDbConnected()) {
       const goal = await Goal.create({
         userId: req.user._id,
@@ -245,7 +258,7 @@ router.post('/', protect, async (req, res) => {
         aiExplanation,
         deadline,
         requirements: requirements || [],
-        actions: actions || []
+        actions: sanitizedActions
       });
       return res.status(201).json(goal);
     } else {

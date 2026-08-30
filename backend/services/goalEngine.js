@@ -182,13 +182,18 @@ export function processGoalAnalysis({
   });
 
   // Action items format
-  const processedActions = actions.map((act, index) => ({
-    _id: 'act-' + index + '-' + Date.now(),
-    title: act.title,
-    description: act.description || '',
-    priority: act.priority || 'medium',
-    status: 'Not Started',
-  }));
+  const processedActions = actions.map((act) => {
+    const cleanAct = {
+      title: act.title,
+      description: act.description || '',
+      priority: act.priority || 'medium',
+      status: act.status || 'Not Started',
+    };
+    if (act._id && typeof act._id === 'string' && /^[0-9a-fA-F]{24}$/.test(act._id)) {
+      cleanAct._id = act._id;
+    }
+    return cleanAct;
+  });
 
   const isProfileComplete = Boolean(userProfile.age && userProfile.state && userProfile.occupation);
 

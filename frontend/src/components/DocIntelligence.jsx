@@ -85,8 +85,8 @@ export default function DocIntelligence({ document: doc, navigate, addToast, add
           {/* AI Confidence & Status Badges */}
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[11px]">
-              <Sparkles size={13} />
-              <span>AI Document Intelligence Verified</span>
+              <Shield size={13} />
+              <span>Private Intelligence Verified</span>
             </div>
             {doc.analysisConfidence && (
               <span className={`px-2.5 py-1 rounded-full border text-[11px] font-bold ${getScoreColor(doc.analysisConfidence)}`}>
@@ -97,6 +97,12 @@ export default function DocIntelligence({ document: doc, navigate, addToast, add
               <Shield size={12} strokeWidth={2} />
               <span>Encrypted Vault Document</span>
             </div>
+          </div>
+
+          {/* Private Intelligence Statement */}
+          <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-[12px] text-slate-300 flex items-center gap-2.5">
+            <Shield size={16} className="text-emerald-400 shrink-0" />
+            <p>Sensitive information is analyzed through LifeFlow&apos;s privacy-aware processing architecture.</p>
           </div>
 
           {/* Title and status */}
